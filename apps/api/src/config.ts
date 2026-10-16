@@ -10,6 +10,17 @@ const schema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
   SUPABASE_STORAGE_BUCKET: z.string().default('operations-documents'),
 });
-export const config = schema.parse(process.env);
+const result = schema.safeParse(process.env);
+if (!result.success) {
+  const details = result.error.issues
+    .map((issue) => `  - ${issue.path.join('.')}: ${issue.message}`)
+    .join('\n');
+  throw new Error(
+    `Invalid API environment configuration:\n${details}\n` +
+      'Set these variables on the API service in Render > Environment, then redeploy. ' +
+      'See docs/render-neon.md. Environment variable values are omitted from this error.',
+  );
+}
+export const config = result.data;
 if (config.NODE_ENV === 'production' && !config.APP_ORIGIN.startsWith('https://'))
   throw new Error('Production requires HTTPS APP_ORIGIN');
