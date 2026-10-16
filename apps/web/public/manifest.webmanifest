@@ -1,0 +1,13 @@
+{
+  "name": "AN Usedless Paper Private Limited",
+  "short_name": "AN Usedless",
+  "description": "Workforce and waste operations",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7f8fa",
+  "theme_color": "#155d43",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

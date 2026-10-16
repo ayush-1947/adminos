@@ -1,0 +1,1266 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Organization {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  name String
+  slug String @unique
+  profiles PersonProfile[]
+  businessUnitRecords BusinessUnit[]
+  roleRecords Role[]
+  rolePermissionRecords RolePermission[]
+  userRecords User[]
+  sessionRecords Session[]
+  departmentRecords Department[]
+  employeeRecords Employee[]
+  clientRecords Client[]
+  contactRecords Contact[]
+  leadRecords Lead[]
+  followUpRecords FollowUp[]
+  contractRecords Contract[]
+  siteRecords Site[]
+  shiftRecords Shift[]
+  siteAssignmentRecords SiteAssignment[]
+  nfcCardRecords NfcCard[]
+  attendanceDeviceRecords AttendanceDevice[]
+  attendanceRecords Attendance[]
+  attendanceTapRecords AttendanceTap[]
+  wasteCategoryRecords WasteCategory[]
+  wasteRecordRecords WasteRecord[]
+  vendorRecords Vendor[]
+  vehicleRecords Vehicle[]
+  disposalRecords Disposal[]
+  taskRecords Task[]
+  ticketRecords Ticket[]
+  siteVisitRecords SiteVisit[]
+  machineRecords Machine[]
+  machineEventRecords MachineEvent[]
+  productionBatchRecords ProductionBatch[]
+  maintenanceRecordRecords MaintenanceRecord[]
+  sparePartRecords SparePart[]
+  invoiceRecords Invoice[]
+  challanRecords Challan[]
+  savedPdfRecords SavedPdf[]
+  paymentRecords Payment[]
+  expenseRecords Expense[]
+  documentRecords Document[]
+  notificationRecords Notification[]
+  auditLogRecords AuditLog[]
+  @@map("organizations")
+}
+
+model BusinessUnit {
+  challanRecords Challan[]
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  code String
+  user_businessUnit User[] @relation("User_businessUnit")
+  department_businessUnit Department[] @relation("Department_businessUnit")
+  employee_businessUnit Employee[] @relation("Employee_businessUnit")
+  client_businessUnit Client[] @relation("Client_businessUnit")
+  lead_businessUnit Lead[] @relation("Lead_businessUnit")
+  contract_businessUnit Contract[] @relation("Contract_businessUnit")
+  site_businessUnit Site[] @relation("Site_businessUnit")
+  shift_businessUnit Shift[] @relation("Shift_businessUnit")
+  siteAssignment_businessUnit SiteAssignment[] @relation("SiteAssignment_businessUnit")
+  attendanceDevice_businessUnit AttendanceDevice[] @relation("AttendanceDevice_businessUnit")
+  attendance_businessUnit Attendance[] @relation("Attendance_businessUnit")
+  wasteRecord_businessUnit WasteRecord[] @relation("WasteRecord_businessUnit")
+  vendor_businessUnit Vendor[] @relation("Vendor_businessUnit")
+  vehicle_businessUnit Vehicle[] @relation("Vehicle_businessUnit")
+  disposal_businessUnit Disposal[] @relation("Disposal_businessUnit")
+  task_businessUnit Task[] @relation("Task_businessUnit")
+  ticket_businessUnit Ticket[] @relation("Ticket_businessUnit")
+  siteVisit_businessUnit SiteVisit[] @relation("SiteVisit_businessUnit")
+  machine_businessUnit Machine[] @relation("Machine_businessUnit")
+  machineEvent_businessUnit MachineEvent[] @relation("MachineEvent_businessUnit")
+  productionBatch_businessUnit ProductionBatch[] @relation("ProductionBatch_businessUnit")
+  maintenanceRecord_businessUnit MaintenanceRecord[] @relation("MaintenanceRecord_businessUnit")
+  invoice_businessUnit Invoice[] @relation("Invoice_businessUnit")
+  payment_businessUnit Payment[] @relation("Payment_businessUnit")
+  expense_businessUnit Expense[] @relation("Expense_businessUnit")
+  document_businessUnit Document[] @relation("Document_businessUnit")
+  notification_businessUnit Notification[] @relation("Notification_businessUnit")
+  auditLog_businessUnit AuditLog[] @relation("AuditLog_businessUnit")
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@unique([organizationId, code])
+  @@map("business_units")
+}
+
+model Role {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  scope String @default("ASSIGNED")
+  rolePermission_role RolePermission[] @relation("RolePermission_role")
+  user_role User[] @relation("User_role")
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@unique([organizationId, name])
+  @@map("roles")
+}
+
+model Permission {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  key String @unique
+  description String
+  rolePermission_permission RolePermission[] @relation("RolePermission_permission")
+  @@map("permissions")
+}
+
+model RolePermission {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  roleId String @db.Uuid
+  role Role @relation("RolePermission_role", fields: [roleId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  permissionId String @db.Uuid
+  permission Permission @relation("RolePermission_permission", fields: [permissionId], references: [id], onDelete: Restrict)
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model User {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  clientId String? @db.Uuid
+  client Client? @relation("User_client", fields: [clientId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  email String @unique
+  name String
+  passwordHash String
+  status String @default("ACTIVE")
+  roleId String @db.Uuid
+  role Role @relation("User_role", fields: [roleId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  businessUnitId String? @db.Uuid
+  businessUnit BusinessUnit? @relation("User_businessUnit", fields: [businessUnitId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  session_user Session[] @relation("Session_user")
+  employee_user Employee[] @relation("Employee_user")
+  notification_user Notification[] @relation("Notification_user")
+  auditLog_actor AuditLog[] @relation("AuditLog_actor")
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@index([organizationId, businessUnitId])
+  @@map("users")
+}
+
+model Session {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  tokenHash String @unique
+  expiresAt DateTime
+  lastSeenAt DateTime @default(now())
+  userId String @db.Uuid
+  user User @relation("Session_user", fields: [userId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@map("sessions")
+}
+
+model Department {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  businessUnitId String? @db.Uuid
+  businessUnit BusinessUnit? @relation("Department_businessUnit", fields: [businessUnitId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  employee_department Employee[] @relation("Employee_department")
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@index([organizationId, businessUnitId])
+  @@map("departments")
+}
+
+model Employee {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  employeeCode String
+  name String
+  phone String?
+  email String?
+  position String @default("WORKER")
+  joiningDate DateTime @default(now())
+  status String @default("ACTIVE")
+  businessUnitId String @db.Uuid
+  businessUnit BusinessUnit @relation("Employee_businessUnit", fields: [businessUnitId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  userId String? @db.Uuid
+  user User? @relation("Employee_user", fields: [userId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  departmentId String? @db.Uuid
+  department Department? @relation("Employee_department", fields: [departmentId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  supervisorId String? @db.Uuid
+  supervisor Employee? @relation("Employee_supervisor", fields: [supervisorId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  managerId String? @db.Uuid
+  manager Employee? @relation("Employee_manager", fields: [managerId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  employee_supervisor Employee[] @relation("Employee_supervisor")
+  employee_manager Employee[] @relation("Employee_manager")
+  client_manager Client[] @relation("Client_manager")
+  lead_salesperson Lead[] @relation("Lead_salesperson")
+  site_manager Site[] @relation("Site_manager")
+  site_supervisor Site[] @relation("Site_supervisor")
+  siteAssignment_employee SiteAssignment[] @relation("SiteAssignment_employee")
+  siteAssignment_supervisor SiteAssignment[] @relation("SiteAssignment_supervisor")
+  nfcCard_employee NfcCard[] @relation("NfcCard_employee")
+  attendance_employee Attendance[] @relation("Attendance_employee")
+  attendanceTap_employee AttendanceTap[] @relation("AttendanceTap_employee")
+  wasteRecord_worker WasteRecord[] @relation("WasteRecord_worker")
+  task_assignee Task[] @relation("Task_assignee")
+  ticket_assignee Ticket[] @relation("Ticket_assignee")
+  siteVisit_manager SiteVisit[] @relation("SiteVisit_manager")
+  productionBatch_operator ProductionBatch[] @relation("ProductionBatch_operator")
+  maintenanceRecord_technician MaintenanceRecord[] @relation("MaintenanceRecord_technician")
+  document_employee Document[] @relation("Document_employee")
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@index([organizationId, businessUnitId])
+  @@unique([organizationId, employeeCode])
+  @@unique([userId, organizationId])
+  @@map("employees")
+}
+
+model Client {
+  users User[] @relation("User_client")
+  challanRecords Challan[]
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  company String
+  contactPerson String?
+  phone String?
+  email String?
+  address String?
+  gstNumber String?
+  status String @default("ACTIVE")
+  businessUnitId String @db.Uuid
+  businessUnit BusinessUnit @relation("Client_businessUnit", fields: [businessUnitId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  managerId String? @db.Uuid
+  manager Employee? @relation("Client_manager", fields: [managerId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  contact_client Contact[] @relation("Contact_client")
+  contract_client Contract[] @relation("Contract_client")
+  site_client Site[] @relation("Site_client")
+  ticket_client Ticket[] @relation("Ticket_client")
+  invoice_client Invoice[] @relation("Invoice_client")
+  document_client Document[] @relation("Document_client")
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@index([organizationId, businessUnitId])
+  @@map("clients")
+}
+
+model Contact {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  phone String?
+  email String?
+  position String?
+  clientId String @db.Uuid
+  client Client @relation("Contact_client", fields: [clientId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@map("contacts")
+}
+
+model Lead {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  company String
+  source String
+  contact String?
+  requirement String?
+  status String @default("NEW")
+  notes String?
+  businessUnitId String @db.Uuid
+  businessUnit BusinessUnit @relation("Lead_businessUnit", fields: [businessUnitId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  salespersonId String? @db.Uuid
+  salesperson Employee? @relation("Lead_salesperson", fields: [salespersonId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  followUp_lead FollowUp[] @relation("FollowUp_lead")
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@index([organizationId, businessUnitId])
+  @@map("leads")
+}
+
+model FollowUp {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  scheduledAt DateTime
+  notes String
+  completedAt DateTime?
+  leadId String @db.Uuid
+  lead Lead @relation("FollowUp_lead", fields: [leadId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@map("follow_ups")
+}
+
+model Contract {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  contractNumber String
+  startDate DateTime
+  endDate DateTime
+  value Decimal @db.Decimal(14,2)
+  services String
+  renewalStatus String @default("ACTIVE")
+  businessUnitId String @db.Uuid
+  businessUnit BusinessUnit @relation("Contract_businessUnit", fields: [businessUnitId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  clientId String @db.Uuid
+  client Client @relation("Contract_client", fields: [clientId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  site_contract Site[] @relation("Site_contract")
+  invoice_contract Invoice[] @relation("Invoice_contract")
+  document_contract Document[] @relation("Document_contract")
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@index([organizationId, businessUnitId])
+  @@unique([organizationId, contractNumber])
+  @@map("contracts")
+}
+
+model Site {
+  challanRecords Challan[]
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  address String
+  latitude Float?
+  longitude Float?
+  wasteType String @default("MIXED")
+  expectedDailyWaste Decimal @default(0) @db.Decimal(12,3)
+  startDate DateTime @default(now())
+  status String @default("ACTIVE")
+  businessUnitId String @db.Uuid
+  businessUnit BusinessUnit @relation("Site_businessUnit", fields: [businessUnitId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  clientId String @db.Uuid
+  client Client @relation("Site_client", fields: [clientId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  contractId String? @db.Uuid
+  contract Contract? @relation("Site_contract", fields: [contractId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  managerId String? @db.Uuid
+  manager Employee? @relation("Site_manager", fields: [managerId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  supervisorId String? @db.Uuid
+  supervisor Employee? @relation("Site_supervisor", fields: [supervisorId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  siteAssignment_site SiteAssignment[] @relation("SiteAssignment_site")
+  attendanceDevice_site AttendanceDevice[] @relation("AttendanceDevice_site")
+  attendance_site Attendance[] @relation("Attendance_site")
+  wasteRecord_site WasteRecord[] @relation("WasteRecord_site")
+  disposal_site Disposal[] @relation("Disposal_site")
+  task_site Task[] @relation("Task_site")
+  ticket_site Ticket[] @relation("Ticket_site")
+  siteVisit_site SiteVisit[] @relation("SiteVisit_site")
+  machine_site Machine[] @relation("Machine_site")
+  machineEvent_site MachineEvent[] @relation("MachineEvent_site")
+  productionBatch_site ProductionBatch[] @relation("ProductionBatch_site")
+  maintenanceRecord_site MaintenanceRecord[] @relation("MaintenanceRecord_site")
+  invoice_site Invoice[] @relation("Invoice_site")
+  payment_site Payment[] @relation("Payment_site")
+  expense_site Expense[] @relation("Expense_site")
+  document_site Document[] @relation("Document_site")
+  notification_site Notification[] @relation("Notification_site")
+  auditLog_site AuditLog[] @relation("AuditLog_site")
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@index([organizationId, businessUnitId])
+  @@map("sites")
+}
+
+model Shift {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  startMinute Int
+  endMinute Int
+  graceMinutes Int @default(15)
+  timezone String @default("Asia/Kolkata")
+  businessUnitId String @db.Uuid
+  businessUnit BusinessUnit @relation("Shift_businessUnit", fields: [businessUnitId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  siteAssignment_shift SiteAssignment[] @relation("SiteAssignment_shift")
+  attendance_shift Attendance[] @relation("Attendance_shift")
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@index([organizationId, businessUnitId])
+  @@map("shifts")
+}
+
+model SiteAssignment {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  startDate DateTime
+  endDate DateTime?
+  isPrimary Boolean @default(false)
+  businessUnitId String @db.Uuid
+  businessUnit BusinessUnit @relation("SiteAssignment_businessUnit", fields: [businessUnitId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  siteId String @db.Uuid
+  site Site @relation("SiteAssignment_site", fields: [siteId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  employeeId String @db.Uuid
+  employee Employee @relation("SiteAssignment_employee", fields: [employeeId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  supervisorId String? @db.Uuid
+  supervisor Employee? @relation("SiteAssignment_supervisor", fields: [supervisorId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  shiftId String @db.Uuid
+  shift Shift @relation("SiteAssignment_shift", fields: [shiftId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@index([organizationId, businessUnitId])
+  @@index([organizationId, siteId])
+  @@map("site_assignments")
+}
+
+model NfcCard {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  cardHash String @unique
+  status String @default("ACTIVE")
+  employeeId String @db.Uuid
+  employee Employee @relation("NfcCard_employee", fields: [employeeId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@map("nfc_cards")
+}
+
+model AttendanceDevice {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  keyHash String @unique
+  status String @default("ACTIVE")
+  businessUnitId String @db.Uuid
+  businessUnit BusinessUnit @relation("AttendanceDevice_businessUnit", fields: [businessUnitId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  siteId String @db.Uuid
+  site Site @relation("AttendanceDevice_site", fields: [siteId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  attendance_device Attendance[] @relation("Attendance_device")
+  attendanceTap_device AttendanceTap[] @relation("AttendanceTap_device")
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@index([organizationId, businessUnitId])
+  @@index([organizationId, siteId])
+  @@map("attendance_devices")
+}
+
+model Attendance {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  workDate DateTime @db.Date
+  checkIn DateTime
+  checkOut DateTime?
+  status String @default("PRESENT")
+  source String @default("MANUAL")
+  latitude Float?
+  longitude Float?
+  overtimeMinutes Int @default(0)
+  earlyDeparture Boolean @default(false)
+  correctionReason String?
+  businessUnitId String @db.Uuid
+  businessUnit BusinessUnit @relation("Attendance_businessUnit", fields: [businessUnitId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  employeeId String @db.Uuid
+  employee Employee @relation("Attendance_employee", fields: [employeeId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  siteId String @db.Uuid
+  site Site @relation("Attendance_site", fields: [siteId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  shiftId String @db.Uuid
+  shift Shift @relation("Attendance_shift", fields: [shiftId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  deviceId String? @db.Uuid
+  device AttendanceDevice? @relation("Attendance_device", fields: [deviceId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@index([organizationId, businessUnitId])
+  @@index([organizationId, siteId])
+  @@unique([employeeId, siteId, workDate])
+  @@map("attendances")
+}
+
+model AttendanceTap {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  eventKey String @unique
+  timestamp DateTime
+  action String
+  employeeId String @db.Uuid
+  employee Employee @relation("AttendanceTap_employee", fields: [employeeId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  deviceId String @db.Uuid
+  device AttendanceDevice @relation("AttendanceTap_device", fields: [deviceId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@map("attendance_taps")
+}
+
+model WasteCategory {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  wasteRecord_category WasteRecord[] @relation("WasteRecord_category")
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@unique([organizationId, name])
+  @@map("waste_categorys")
+}
+
+model WasteRecord {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  recordedAt DateTime @default(now())
+  quantity Decimal @db.Decimal(12,3)
+  unit String @default("KG")
+  stage String @default("COLLECTED")
+  notes String?
+  businessUnitId String @db.Uuid
+  businessUnit BusinessUnit @relation("WasteRecord_businessUnit", fields: [businessUnitId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  siteId String @db.Uuid
+  site Site @relation("WasteRecord_site", fields: [siteId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  workerId String @db.Uuid
+  worker Employee @relation("WasteRecord_worker", fields: [workerId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  categoryId String @db.Uuid
+  category WasteCategory @relation("WasteRecord_category", fields: [categoryId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  disposal_wasteRecord Disposal[] @relation("Disposal_wasteRecord")
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@index([organizationId, businessUnitId])
+  @@index([organizationId, siteId])
+  @@map("waste_records")
+}
+
+model Vendor {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  type String
+  contactPerson String?
+  phone String?
+  email String?
+  services String?
+  rate Decimal? @db.Decimal(12,2)
+  status String @default("ACTIVE")
+  businessUnitId String @db.Uuid
+  businessUnit BusinessUnit @relation("Vendor_businessUnit", fields: [businessUnitId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  vehicle_vendor Vehicle[] @relation("Vehicle_vendor")
+  disposal_vendor Disposal[] @relation("Disposal_vendor")
+  expense_vendor Expense[] @relation("Expense_vendor")
+  document_vendor Document[] @relation("Document_vendor")
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@index([organizationId, businessUnitId])
+  @@map("vendors")
+}
+
+model Vehicle {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  registration String
+  capacity Decimal? @db.Decimal(12,3)
+  businessUnitId String @db.Uuid
+  businessUnit BusinessUnit @relation("Vehicle_businessUnit", fields: [businessUnitId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  vendorId String? @db.Uuid
+  vendor Vendor? @relation("Vehicle_vendor", fields: [vendorId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  disposal_vehicle Disposal[] @relation("Disposal_vehicle")
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@index([organizationId, businessUnitId])
+  @@unique([organizationId, registration])
+  @@map("vehicles")
+}
+
+model Disposal {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  disposedAt DateTime @default(now())
+  quantity Decimal @db.Decimal(12,3)
+  method String
+  receiptNumber String?
+  notes String?
+  businessUnitId String @db.Uuid
+  businessUnit BusinessUnit @relation("Disposal_businessUnit", fields: [businessUnitId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  siteId String @db.Uuid
+  site Site @relation("Disposal_site", fields: [siteId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  wasteRecordId String @db.Uuid
+  wasteRecord WasteRecord @relation("Disposal_wasteRecord", fields: [wasteRecordId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  vendorId String @db.Uuid
+  vendor Vendor @relation("Disposal_vendor", fields: [vendorId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  vehicleId String? @db.Uuid
+  vehicle Vehicle? @relation("Disposal_vehicle", fields: [vehicleId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@index([organizationId, businessUnitId])
+  @@index([organizationId, siteId])
+  @@map("disposals")
+}
+
+model Task {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  description String?
+  status String @default("PENDING")
+  priority String @default("MEDIUM")
+  dueAt DateTime
+  businessUnitId String @db.Uuid
+  businessUnit BusinessUnit @relation("Task_businessUnit", fields: [businessUnitId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  siteId String @db.Uuid
+  site Site @relation("Task_site", fields: [siteId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  assigneeId String @db.Uuid
+  assignee Employee @relation("Task_assignee", fields: [assigneeId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@index([organizationId, businessUnitId])
+  @@index([organizationId, siteId])
+  @@map("tasks")
+}
+
+model Ticket {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  category String
+  priority String @default("MEDIUM")
+  description String
+  status String @default("OPEN")
+  dueAt DateTime
+  resolvedAt DateTime?
+  businessUnitId String @db.Uuid
+  businessUnit BusinessUnit @relation("Ticket_businessUnit", fields: [businessUnitId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  siteId String @db.Uuid
+  site Site @relation("Ticket_site", fields: [siteId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  clientId String @db.Uuid
+  client Client @relation("Ticket_client", fields: [clientId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  assigneeId String? @db.Uuid
+  assignee Employee? @relation("Ticket_assignee", fields: [assigneeId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@index([organizationId, businessUnitId])
+  @@index([organizationId, siteId])
+  @@map("tickets")
+}
+
+model SiteVisit {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  visitedAt DateTime @default(now())
+  latitude Float
+  longitude Float
+  checklist Json
+  notes String?
+  actionItems String?
+  businessUnitId String @db.Uuid
+  businessUnit BusinessUnit @relation("SiteVisit_businessUnit", fields: [businessUnitId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  siteId String @db.Uuid
+  site Site @relation("SiteVisit_site", fields: [siteId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  managerId String @db.Uuid
+  manager Employee @relation("SiteVisit_manager", fields: [managerId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@index([organizationId, businessUnitId])
+  @@index([organizationId, siteId])
+  @@map("site_visits")
+}
+
+model Machine {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  machineCode String
+  model String
+  installationDate DateTime
+  status String @default("IDLE")
+  capacity Decimal @db.Decimal(12,3)
+  operatingHours Decimal @default(0) @db.Decimal(12,2)
+  maintenanceDue DateTime?
+  businessUnitId String @db.Uuid
+  businessUnit BusinessUnit @relation("Machine_businessUnit", fields: [businessUnitId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  siteId String @db.Uuid
+  site Site @relation("Machine_site", fields: [siteId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  machineEvent_machine MachineEvent[] @relation("MachineEvent_machine")
+  productionBatch_machine ProductionBatch[] @relation("ProductionBatch_machine")
+  maintenanceRecord_machine MaintenanceRecord[] @relation("MaintenanceRecord_machine")
+  document_machine Document[] @relation("Document_machine")
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@index([organizationId, businessUnitId])
+  @@index([organizationId, siteId])
+  @@unique([organizationId, machineCode])
+  @@map("machines")
+}
+
+model MachineEvent {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  kind String
+  state String?
+  recordedAt DateTime @default(now())
+  payload Json?
+  businessUnitId String @db.Uuid
+  businessUnit BusinessUnit @relation("MachineEvent_businessUnit", fields: [businessUnitId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  siteId String @db.Uuid
+  site Site @relation("MachineEvent_site", fields: [siteId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  machineId String @db.Uuid
+  machine Machine @relation("MachineEvent_machine", fields: [machineId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@index([organizationId, businessUnitId])
+  @@index([organizationId, siteId])
+  @@map("machine_events")
+}
+
+model ProductionBatch {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  batchCode String
+  inputKg Decimal @db.Decimal(12,3)
+  outputKg Decimal? @db.Decimal(12,3)
+  startTime DateTime
+  endTime DateTime?
+  qualityStatus String @default("PENDING")
+  businessUnitId String @db.Uuid
+  businessUnit BusinessUnit @relation("ProductionBatch_businessUnit", fields: [businessUnitId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  siteId String @db.Uuid
+  site Site @relation("ProductionBatch_site", fields: [siteId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  machineId String @db.Uuid
+  machine Machine @relation("ProductionBatch_machine", fields: [machineId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  operatorId String @db.Uuid
+  operator Employee @relation("ProductionBatch_operator", fields: [operatorId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@index([organizationId, businessUnitId])
+  @@index([organizationId, siteId])
+  @@unique([organizationId, batchCode])
+  @@map("production_batchs")
+}
+
+model MaintenanceRecord {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  type String
+  status String @default("SCHEDULED")
+  scheduledAt DateTime
+  completedAt DateTime?
+  cost Decimal @default(0) @db.Decimal(12,2)
+  downtimeMinutes Int @default(0)
+  notes String?
+  businessUnitId String @db.Uuid
+  businessUnit BusinessUnit @relation("MaintenanceRecord_businessUnit", fields: [businessUnitId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  siteId String @db.Uuid
+  site Site @relation("MaintenanceRecord_site", fields: [siteId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  machineId String @db.Uuid
+  machine Machine @relation("MaintenanceRecord_machine", fields: [machineId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  technicianId String? @db.Uuid
+  technician Employee? @relation("MaintenanceRecord_technician", fields: [technicianId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  sparePart_maintenance SparePart[] @relation("SparePart_maintenance")
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@index([organizationId, businessUnitId])
+  @@index([organizationId, siteId])
+  @@map("maintenance_records")
+}
+
+model SparePart {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  partCode String
+  quantity Int
+  unitCost Decimal @db.Decimal(12,2)
+  maintenanceId String @db.Uuid
+  maintenance MaintenanceRecord @relation("SparePart_maintenance", fields: [maintenanceId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@map("spare_parts")
+}
+
+model Invoice {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  invoiceNumber String
+  issuedAt DateTime
+  dueAt DateTime
+  amount Decimal @db.Decimal(14,2)
+  status String @default("ISSUED")
+  businessUnitId String @db.Uuid
+  businessUnit BusinessUnit @relation("Invoice_businessUnit", fields: [businessUnitId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  siteId String @db.Uuid
+  site Site @relation("Invoice_site", fields: [siteId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  clientId String @db.Uuid
+  client Client @relation("Invoice_client", fields: [clientId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  contractId String? @db.Uuid
+  contract Contract? @relation("Invoice_contract", fields: [contractId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  payment_invoice Payment[] @relation("Payment_invoice")
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@index([organizationId, businessUnitId])
+  @@index([organizationId, siteId])
+  @@unique([organizationId, invoiceNumber])
+  @@map("invoices")
+}
+
+model Challan {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  challanNumber String
+  kind String @default("DELIVERY")
+  issuedAt DateTime
+  businessUnitId String @db.Uuid
+  businessUnit BusinessUnit @relation(fields: [businessUnitId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  siteId String @db.Uuid
+  site Site @relation(fields: [siteId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  clientId String @db.Uuid
+  client Client @relation(fields: [clientId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  material String
+  quantity Decimal @db.Decimal(14,3)
+  unit String
+  destination String?
+  vehicleNumber String?
+  driverName String?
+  notes String?
+  @@unique([id, organizationId])
+  @@unique([organizationId, challanNumber])
+  @@index([organizationId, businessUnitId, siteId])
+  @@map("challans")
+}
+
+model SavedPdf {
+  id String @id @default(uuid()) @db.Uuid
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  sourceKey String
+  sourceId String @db.Uuid
+  fingerprint String
+  filename String
+  content Bytes
+  size Int
+  createdAt DateTime @default(now()) @map("created_at")
+  createdBy String @db.Uuid @map("created_by")
+  @@unique([organizationId, sourceKey, sourceId, fingerprint])
+  @@index([organizationId, sourceKey, sourceId, createdAt])
+  @@map("saved_pdfs")
+}
+
+model Payment {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  amount Decimal @db.Decimal(14,2)
+  paidAt DateTime
+  reference String
+  method String
+  businessUnitId String @db.Uuid
+  businessUnit BusinessUnit @relation("Payment_businessUnit", fields: [businessUnitId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  siteId String @db.Uuid
+  site Site @relation("Payment_site", fields: [siteId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  invoiceId String @db.Uuid
+  invoice Invoice @relation("Payment_invoice", fields: [invoiceId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@index([organizationId, businessUnitId])
+  @@index([organizationId, siteId])
+  @@unique([organizationId, reference])
+  @@map("payments")
+}
+
+model Expense {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  category String
+  amount Decimal @db.Decimal(14,2)
+  incurredAt DateTime
+  status String @default("PENDING")
+  businessUnitId String @db.Uuid
+  businessUnit BusinessUnit @relation("Expense_businessUnit", fields: [businessUnitId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  siteId String @db.Uuid
+  site Site @relation("Expense_site", fields: [siteId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  vendorId String? @db.Uuid
+  vendor Vendor? @relation("Expense_vendor", fields: [vendorId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@index([organizationId, businessUnitId])
+  @@index([organizationId, siteId])
+  @@map("expenses")
+}
+
+model Document {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  objectKey String @unique
+  mimeType String
+  size Int
+  documentType String
+  expiresAt DateTime?
+  businessUnitId String @db.Uuid
+  businessUnit BusinessUnit @relation("Document_businessUnit", fields: [businessUnitId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  siteId String? @db.Uuid
+  site Site? @relation("Document_site", fields: [siteId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  employeeId String? @db.Uuid
+  employee Employee? @relation("Document_employee", fields: [employeeId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  clientId String? @db.Uuid
+  client Client? @relation("Document_client", fields: [clientId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  contractId String? @db.Uuid
+  contract Contract? @relation("Document_contract", fields: [contractId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  vendorId String? @db.Uuid
+  vendor Vendor? @relation("Document_vendor", fields: [vendorId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  machineId String? @db.Uuid
+  machine Machine? @relation("Document_machine", fields: [machineId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@index([organizationId, businessUnitId])
+  @@index([organizationId, siteId])
+  @@map("documents")
+}
+
+model Notification {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  message String
+  kind String
+  dedupeKey String @unique
+  readAt DateTime?
+  channel String @default("IN_APP")
+  deliveredAt DateTime?
+  businessUnitId String? @db.Uuid
+  businessUnit BusinessUnit? @relation("Notification_businessUnit", fields: [businessUnitId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  siteId String? @db.Uuid
+  site Site? @relation("Notification_site", fields: [siteId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  userId String @db.Uuid
+  user User @relation("Notification_user", fields: [userId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@index([organizationId, businessUnitId])
+  @@index([organizationId, siteId])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String? @db.Uuid @map("created_by")
+  updatedBy String? @db.Uuid @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  action String
+  entity String
+  entityId String
+  previousValue Json?
+  newValue Json?
+  requestId String?
+  businessUnitId String? @db.Uuid
+  businessUnit BusinessUnit? @relation("AuditLog_businessUnit", fields: [businessUnitId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  siteId String? @db.Uuid
+  site Site? @relation("AuditLog_site", fields: [siteId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  actorId String? @db.Uuid
+  actor User? @relation("AuditLog_actor", fields: [actorId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt])
+  @@index([organizationId, businessUnitId])
+  @@index([organizationId, siteId])
+  @@map("audit_logs")
+}
+
+model PersonProfile {
+  id String @id @default(uuid()) @db.Uuid
+  organizationId String @db.Uuid @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  subjectType String
+  subjectId String @db.Uuid
+  designation String?
+  phone String?
+  address String?
+  dateOfBirth DateTime? @db.Date
+  emergencyContact String?
+  governmentIdType String?
+  governmentIdNumber String?
+  monthlyPay Decimal? @db.Decimal(14,2)
+  notes String?
+  updatedAt DateTime @updatedAt
+  assets ProfileAsset[]
+  payments StaffPayment[]
+  @@unique([organizationId, subjectType, subjectId])
+  @@unique([id, organizationId])
+  @@map("person_profiles")
+}
+
+model ProfileAsset {
+  id String @id @default(uuid()) @db.Uuid
+  organizationId String @db.Uuid @map("organization_id")
+  profileId String @db.Uuid
+  profile PersonProfile @relation(fields: [profileId, organizationId], references: [id, organizationId], onDelete: Cascade)
+  kind String
+  name String
+  mimeType String
+  size Int
+  content Bytes
+  createdAt DateTime @default(now())
+  createdBy String @db.Uuid
+  @@index([profileId, kind])
+  @@map("profile_assets")
+}
+
+model StaffPayment {
+  id String @id @default(uuid()) @db.Uuid
+  organizationId String @db.Uuid @map("organization_id")
+  profileId String @db.Uuid
+  profile PersonProfile @relation(fields: [profileId, organizationId], references: [id, organizationId], onDelete: Cascade)
+  amount Decimal @db.Decimal(14,2)
+  paidAt DateTime
+  period String
+  method String
+  reference String?
+  notes String?
+  createdAt DateTime @default(now())
+  createdBy String @db.Uuid
+  @@index([profileId, paidAt])
+  @@map("staff_payments")
+}

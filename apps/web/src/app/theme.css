@@ -1,0 +1,291 @@
+:root {
+  color-scheme: light;
+}
+
+html[data-theme='dark'] .metric-label {
+  background: #203529;
+}
+html[data-theme='dark']
+  :is(
+    .metric-label,
+    .metric-icon,
+    .chart-switch,
+    .chart-foot,
+    .business-numbers > div,
+    .business-bottom,
+    .count-badge,
+    .site-icon,
+    .attention-list > a,
+    .attention-footer,
+    .uptime-list > div:not(.state),
+    .dialog-footer,
+    .search-input,
+    .module-tabs,
+    .filter-select,
+    .pagination,
+    .relation-control,
+    .brand-version,
+    .range-control button
+  ) {
+  border-color: var(--line);
+}
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  color: var(--ink);
+  flex-shrink: 0;
+}
+.theme-toggle:hover {
+  background: var(--line);
+}
+.login-form-wrap {
+  position: relative;
+}
+.login-theme {
+  position: absolute;
+  top: 20px;
+  right: 72px;
+}
+
+html[data-theme='dark']
+  :is(.nav-search, .nav-search kbd, .system-status, .unit-tabs, .range-control) {
+  border-color: var(--line);
+}
+
+html[data-theme='dark'] {
+  color-scheme: dark;
+  --green: #78d6aa;
+  --green-dark: #a2e8c5;
+  --ink: #e2eee7;
+  --muted: #a4b7ab;
+  --line: #30463a;
+  --surface: #18271f;
+  --background: #101b16;
+  --color-background: #101b16;
+  --color-foreground: #e2eee7;
+}
+
+html[data-theme='dark']
+  :is(
+    .sidebar,
+    .topbar,
+    .panel,
+    .metric,
+    .business-card,
+    .range-control,
+    .search-input,
+    .nav-search kbd,
+    [role='dialog'],
+    .bg-white
+  ) {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+html[data-theme='dark'] :is(input:not([type='checkbox']):not([type='file']), select, textarea) {
+  background: #122119 !important;
+  color: var(--ink);
+  border-color: var(--line);
+}
+html[data-theme='dark'] input:disabled {
+  background: #26332c !important;
+}
+html[data-theme='dark'] :is(input, textarea)::placeholder {
+  color: #93a79a;
+}
+
+html[data-theme='dark']
+  :is(
+    label,
+    .brand,
+    .breadcrumbs strong,
+    .primary-cell,
+    .site-name,
+    .detail-grid dd,
+    .guide strong,
+    .report-guide h2,
+    .attention-list strong,
+    .text-neutral-700,
+    .text-neutral-600
+  ) {
+  color: var(--ink);
+}
+
+html[data-theme='dark']
+  :is(
+    .brand small,
+    .brand-version,
+    .workspace-picker small,
+    .nav-search,
+    .nav-section > p,
+    .nav-item,
+    .system-status small,
+    .help-link,
+    .profile small,
+    .profile button,
+    .topbar-actions,
+    .timezone,
+    .notification-button,
+    .eyebrow,
+    .page-heading p,
+    .unit-tabs a,
+    .unit-tabs button,
+    .metric-title,
+    .metric-foot,
+    .metric-label,
+    .metric-value small,
+    .panel-heading p,
+    .chart-switch button,
+    .chart-summary > span,
+    .chart-summary strong small,
+    .chart-foot,
+    .donut-center > span,
+    .donut-center small,
+    .composition-legend span,
+    .composition-legend small,
+    .business-card-heading p,
+    .business-card-heading > a,
+    .business-numbers small,
+    .business-numbers strong > span,
+    .business-bottom,
+    .site-name small,
+    .performance,
+    .attention-list p,
+    .attention-list small,
+    .attention-footer,
+    .finance-summary span,
+    .uptime-list small,
+    .impact-note,
+    .impact-note small,
+    footer,
+    .muted,
+    .state p,
+    .dialog-description,
+    .dialog-footer > span,
+    .command-results small,
+    .guide,
+    .module-tabs > a,
+    .module-tabs > button,
+    .pagination,
+    .detail-grid dt,
+    .site-activity li span,
+    .format-options button,
+    .report-guide p,
+    .report-guide li,
+    .report-guide-bottom,
+    .login-form > p,
+    .login-form label,
+    .login-security,
+    .login-form .login-note,
+    .login-copyright,
+    .text-neutral-500
+  ) {
+  color: var(--muted);
+}
+
+html[data-theme='dark']
+  :is(
+    .nav-search,
+    .system-status,
+    .unit-tabs,
+    .metric-icon,
+    .business-bottom,
+    .attention-footer,
+    .count-badge,
+    .site-icon,
+    .state-icon,
+    .performance-track,
+    .report-guide,
+    .login-icon
+  ) {
+  background: #203529;
+  color: #b5cebc;
+}
+
+html[data-theme='dark']
+  :is(
+    .nav-item.active,
+    .nav-item:hover,
+    .unit-tabs button.selected,
+    .chart-switch button.selected,
+    .format-options button.selected,
+    .command-results > a:hover,
+    .live-pill,
+    .notice,
+    .success-message,
+    .business-logo.viagreen,
+    .badge.green
+  ) {
+  background: #244533;
+  color: #a4e8be;
+  border-color: #42684e;
+}
+
+html[data-theme='dark']
+  :is(.module-tabs .active, .text-link, .status-text, .chart-foot > a, .business-bottom > a) {
+  color: #a4e8be;
+}
+html[data-theme='dark'] :is(.badge, .avatar, .workspace-avatar) {
+  background: #304339;
+  color: #d1e1d5;
+  border-color: var(--line);
+}
+html[data-theme='dark'] .badge.green {
+  background: #244533;
+  color: #a4e8be;
+}
+html[data-theme='dark']
+  :is(.badge.amber, .alert-icon, .alert-icon.yellow, .business-logo.anthrasite, .mini-amber) {
+  background: #403723;
+  color: #efce87;
+  border-color: #665538;
+}
+html[data-theme='dark'] :is(.badge.red, .form-error) {
+  background: #442c29;
+  color: #ffb6a4;
+  border-color: #71433b;
+}
+html[data-theme='dark'] .field-error {
+  color: #ffb6a4;
+}
+html[data-theme='dark'] th {
+  background: #1d3025;
+  color: #b5c9ba;
+}
+html[data-theme='dark'] td {
+  color: #c8d9cd;
+}
+html[data-theme='dark'] tbody tr:hover {
+  background: #22392b;
+}
+html[data-theme='dark']
+  :is(th, td, .format-options button, .permission-grid label, .border-neutral-200) {
+  border-color: var(--line);
+}
+html[data-theme='dark'] .login-form-wrap {
+  background: var(--background);
+}
+html[data-theme='dark'] .login-story {
+  background: #142f23;
+}
+html[data-theme='dark'] :is(.hover\:bg-neutral-50, .hover\:bg-neutral-100):hover {
+  background: #2a4032;
+}
+html[data-theme='dark'] .recharts-cartesian-grid line {
+  stroke: #344d3d;
+}
+html[data-theme='dark'] .recharts-text {
+  fill: #adbfaf;
+}
+html[data-theme='dark'] .recharts-default-tooltip {
+  background: #18271f !important;
+  border-color: #42684e !important;
+  color: #e2eee7 !important;
+}
+html[data-theme='dark'] .recharts-tooltip-item {
+  color: #b5e4c7 !important;
+}

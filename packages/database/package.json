@@ -1,0 +1,1 @@
+{"name":"@os/database","version":"0.1.0","private":true,"main":"index.ts","dependencies":{"@prisma/client":"6.19.2","bcryptjs":"^3.0.2","dotenv":"^17.2.3"}}

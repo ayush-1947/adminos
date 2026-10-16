@@ -1,0 +1,42 @@
+{
+  "name": "useless-operations-os",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "predev": "node scripts/ensure-local-db.mjs",
+    "dev": "concurrently -n api,web -c green,blue \"npm run dev -w @os/api\" \"npm run dev -w @os/web\"",
+    "build": "npm run build -w @os/api && npm run build -w @os/web",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test -w @os/api",
+    "db:generate": "prisma generate --schema packages/database/prisma/schema.prisma",
+    "db:migrate": "prisma migrate dev --schema packages/database/prisma/schema.prisma",
+    "db:deploy": "prisma migrate deploy --schema packages/database/prisma/schema.prisma",
+    "db:seed": "tsx packages/database/prisma/seed.ts",
+    "db:seed:passwords": "tsx packages/database/prisma/seed.ts --passwords-only",
+    "db:local": "node scripts/local-db.mjs",
+    "format": "prettier --write apps packages scripts docs *.json *.yml",
+    "test:e2e": "playwright test",
+    "provision": "tsx packages/database/prisma/provision.ts"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^22.19.0",
+    "concurrently": "^9.2.1",
+    "embedded-postgres": "^18.4.0-beta.17",
+    "prisma": "6.19.2",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "prettier": "^3.6.2"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "overrides": {
+    "effect": "^3.20.0",
+    "deepmerge-ts": "^8.0.0"
+  }
+}
