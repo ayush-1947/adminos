@@ -1,3 +1,6 @@
+export function attendanceCredit(status: string) {
+  return status === 'ABSENT' ? 0 : status === 'HALF_DAY' ? 0.5 : 1;
+}
 export function shiftWindow(at: Date, shift: { startMinute: number; endMinute: number }) {
   // Operational shifts use IST, which has no daylight saving changes.
   const ist = new Date(at.getTime() + 330 * 60000);

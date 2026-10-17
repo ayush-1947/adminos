@@ -60,8 +60,17 @@ export async function authenticate(token: string): Promise<Principal | null> {
                   some: {
                     deletedAt: null,
                     startDate: { lte: now },
-                    OR: [{ endDate: null }, { endDate: { gte: now } }],
-                    employeeId: e.id,
+                    AND: [
+                      { OR: [{ endDate: null }, { endDate: { gte: now } }] },
+                      {
+                        OR: [
+                          { employeeId: e.id },
+                          ...(u.role.name === 'Site Supervisor'
+                            ? [{ supervisorId: e.id }, { employee: { supervisorId: e.id } }]
+                            : []),
+                        ],
+                      },
+                    ],
                   },
                 },
               },

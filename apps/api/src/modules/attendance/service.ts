@@ -109,7 +109,17 @@ export async function recordTap(deviceKey: string, body: unknown) {
           },
         });
       } else {
-        assert(previous && !previous.checkOut, 409, 'No open check-in exists for this shift');
+        assert(
+          previous && previous.checkIn && !previous.checkOut,
+          409,
+          'No open check-in exists for this shift',
+        );
+        assert(!previous.manualOverrideBy, 409, 'Attendance has been reviewed by a manager');
+        assert(
+          !['ABSENT', 'HALF_DAY'].includes(previous.status),
+          409,
+          'Attendance has been marked manually for this day',
+        );
         assert(at > previous.checkIn, 422, 'Check-out must follow check-in');
         record = await tx.attendance.update({
           where: { id: previous.id },

@@ -21,6 +21,7 @@ import { list, detail, save } from './modules/resources/service';
 import { scopeFor } from './modules/resources/scope';
 import { dashboard } from './modules/analytics/service';
 import { recordTap } from './modules/attendance/service';
+import { attendanceRegister, saveAttendanceRegister } from './modules/attendance/manual';
 import { exportReport } from './modules/reports/service';
 import { upload, download } from './modules/documents/service';
 import { refreshNotifications } from './modules/notifications/service';
@@ -120,6 +121,8 @@ app.get('/api/auth/me', async (req, res) => {
   res.json({ user, organization, businessUnits, principal: p });
 });
 app.get('/api/org-chart', async (req, res) => res.json(await orgChart(req.principal)));
+app.get('/api/attendance/register', async (req, res) => res.json(await attendanceRegister(req.principal, req.query)));
+app.post('/api/attendance/register', async (req, res) => res.json(await saveAttendanceRegister(req.principal, req.body, req.requestId)));
 app.post('/api/auth/logout', async (req, res) => {
   await db.session.deleteMany({
     where: { tokenHash: digest(req.cookies.os_session), userId: req.principal.userId },

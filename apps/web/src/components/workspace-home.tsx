@@ -5,10 +5,16 @@ import { useEffect, useState } from 'react';
 import { api, type Row } from '@/lib/api';
 import { useOs } from './shell';
 import { Dashboard } from './dashboard';
+import { AttendanceRegister } from './attendance-register';
 import { ProfileLink } from './profile';
 import { Loading, ErrorState, Empty } from './ui/states';
 export function WorkspaceHome() {
   const { identity } = useOs();
+  if (
+    identity.principal.role === 'Site Supervisor' &&
+    identity.principal.permissions.includes('attendance:read')
+  )
+    return <AttendanceRegister />;
   return identity.principal.role === 'Customer' ? <CustomerHome /> : <Dashboard />;
 }
 function CustomerHome() {

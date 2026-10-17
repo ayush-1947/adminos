@@ -250,7 +250,7 @@ export const catalog: Record<string, Resource> = {
       date('workDate', 'Work date'),
       date('checkIn', 'Check-in'),
       date('checkOut', 'Check-out', false),
-      sel('status', 'Status', ['PRESENT', 'LATE']),
+      sel('status', 'Status', ['PRESENT', 'ABSENT', 'HALF_DAY', 'LATE']),
       f('correctionReason', 'Reason for manual entry / correction', 'textarea'),
     ],
     ['employeeId', 'siteId', 'workDate', 'checkIn', 'checkOut', 'status'],

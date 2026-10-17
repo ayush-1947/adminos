@@ -567,7 +567,7 @@ model Attendance {
   organizationId String @db.Uuid @map("organization_id")
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   workDate DateTime @db.Date
-  checkIn DateTime
+  checkIn DateTime?
   checkOut DateTime?
   status String @default("PRESENT")
   source String @default("MANUAL")
@@ -576,6 +576,7 @@ model Attendance {
   overtimeMinutes Int @default(0)
   earlyDeparture Boolean @default(false)
   correctionReason String?
+  manualOverrideBy String? @db.Uuid
   businessUnitId String @db.Uuid
   businessUnit BusinessUnit @relation("Attendance_businessUnit", fields: [businessUnitId, organizationId], references: [id, organizationId], onDelete: Restrict)
   employeeId String @db.Uuid

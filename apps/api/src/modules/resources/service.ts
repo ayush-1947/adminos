@@ -275,6 +275,7 @@ export async function save(
   requestId: string,
 ) {
   requirePermission(p, `${key}:write`);
+  assert(key !== 'attendance', 422, 'Use the daily attendance register to mark or correct attendance');
   const r = getResource(key);
   assert(!r.readonly, 405, 'This resource uses a dedicated workflow');
   if (id) z.uuid().parse(id);

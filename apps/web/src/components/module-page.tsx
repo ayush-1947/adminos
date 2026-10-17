@@ -5,9 +5,18 @@ import { Dashboard } from './dashboard';
 import { Records } from './records';
 import { Reports } from './reports';
 import { Settings } from './settings';
+import { AttendanceRegister } from './attendance-register';
 import { Empty, Loading } from './ui/states';
 export function ModulePage({ moduleKey }: { moduleKey: string }) {
   const { catalog, identity } = useOs();
+  if (
+    moduleKey === 'attendance' &&
+    catalog.attendance &&
+    ['Super Admin', 'Business Manager', 'Operations Manager', 'Site Supervisor'].includes(
+      identity.principal.role,
+    )
+  )
+    return <AttendanceRegister />;
   if (moduleKey === 'viagreen' && catalog.waste) return <Dashboard vertical="viagreen" />;
   if (moduleKey === 'anthrasite' && catalog.production) return <Dashboard vertical="anthrasite" />;
   if (moduleKey === 'reports' && identity.principal.permissions.includes('reports:read'))

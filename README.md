@@ -34,6 +34,14 @@ The seed is additive and rerunnable through deterministic IDs. It does not reset
 
 ## Implemented workflows
 
+### Simple manual attendance
+
+Supervisors land directly on a daily attendance sheet and can mark themselves and their own assigned workers. Choose a site/date, tap **Present**, **Absent**, or **Half day** beside each person, optionally add notes, then tap **Save attendance**. No check-in/out times or correction reasons are required.
+
+Managers open **Attendance** to mark their site supervisors and workers, including correcting marks saved by supervisors. Manager-reviewed marks are locked for supervisors; managers can revise them again. Changes are audited and stale saves are rejected so one person cannot silently overwrite another's changes. Half days count as 0.5 and absences as zero in attendance percentages. Unmarked people remain unmarked rather than being automatically saved as present.
+
+NFC device/card enrollment and tap endpoints remain available for later integration. Existing NFC clock times are retained; daily manual marks do not invent clock times. Apply committed database migrations before deploying this feature.
+
 - Organization/business-unit/site RBAC with six seeded roles and per-resource read/write permissions.
 - Server-side sessions, password hashing, origin checks, rate limiting, structured errors, request IDs and audit logs.
 - CRM clients, contacts, leads, follow-ups, contracts, sites and workforce hierarchy.

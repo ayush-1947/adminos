@@ -552,7 +552,7 @@ export function Records({ moduleKey }: { moduleKey: string }) {
               {
                 sites: 'Every location, connected to the people and clients behind it.',
                 employees: 'Your people, their assignments, and the work they make possible.',
-                attendance: 'Site-level attendance, NFC-ready and backed by a clear audit trail.',
+                attendance: 'Daily attendance with present, absent, half day and notes.',
                 waste: 'Track every kilogram from collection through responsible disposal.',
                 production: 'Trace wet waste input, eco-coal output, and batch quality.',
                 invoices: 'Manage client billing and follow each invoice through to payment.',

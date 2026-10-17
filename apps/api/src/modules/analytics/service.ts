@@ -3,6 +3,7 @@ import { db, repository, type Row } from '../../lib/db';
 import { requirePermission, type Principal } from '../auth/policy';
 import { scopeFor } from '../resources/scope';
 import { HttpError } from '../../lib/errors';
+import { attendanceCredit } from '../attendance/domain';
 const range = z.object({
   from: z.iso.datetime({ offset: true }),
   to: z.iso.datetime({ offset: true }),
@@ -86,9 +87,11 @@ export async function dashboard(p: Principal, query: unknown) {
       if (a.startDate <= day && (!a.endDate || a.endDate >= day))
         scheduled.add(`${a.employeeId}:${a.siteId}:${day.toISOString().slice(0, 10)}`);
   }
-  const attendancePercent = scheduled.size
-    ? Math.round((attendance.length / scheduled.size) * 100)
-    : 0;
+  for (const a of attendance)
+    scheduled.add(`${a.employeeId}:${a.siteId}:${a.workDate.toISOString().slice(0, 10)}`);
+  const presentDays = attendance.reduce((total, a) => total + attendanceCredit(a.status), 0);
+  const attended = attendance.filter((a) => a.status !== 'ABSENT');
+  const attendancePercent = scheduled.size ? Math.round((presentDays / scheduled.size) * 100) : 0;
   const wasteByDay: Record<string, { date: string; waste: number; coal: number; present: number }> =
     {};
   for (let day = new Date(from); day <= to; day = new Date(day.getTime() + 86400000)) {
@@ -105,7 +108,7 @@ export async function dashboard(p: Principal, query: unknown) {
   }
   for (const a of attendance) {
     const day = new Date(a.workDate).toISOString().slice(0, 10);
-    if (wasteByDay[day]) wasteByDay[day].present++;
+    if (wasteByDay[day]) wasteByDay[day].present += attendanceCredit(a.status);
   }
   const days = Math.max(1, Math.ceil((to.getTime() - from.getTime()) / 86400000));
   const sitePerformance = sites
@@ -124,7 +127,9 @@ export async function dashboard(p: Principal, query: unknown) {
         wasteKg: kg,
         expectedKg: expected,
         performance: expected ? Math.round((kg / expected) * 100) : 0,
-        present: attendance.filter((a) => a.siteId === s.id).length,
+        present: attendance
+          .filter((a) => a.siteId === s.id)
+          .reduce((total, a) => total + attendanceCredit(a.status), 0),
         tickets: tickets.filter(
           (t) => t.siteId === s.id && !['RESOLVED', 'CLOSED'].includes(t.status),
         ).length,
@@ -178,7 +183,16 @@ export async function dashboard(p: Principal, query: unknown) {
       activeSites: sites.filter((s) => s.status === 'ACTIVE').length,
       employees: employees.filter((e) => e.status === 'ACTIVE').length,
       activeWorkers: new Set(
-        attendance.filter((a) => !a.checkOut && a.checkIn >= startToday).map((a) => a.employeeId),
+        attended
+          .filter(
+            (a) =>
+              !a.checkOut &&
+              (a.checkIn
+                ? a.checkIn >= startToday
+                : a.workDate.toISOString().slice(0, 10) ===
+                  new Date(current.getTime() + 330 * 60000).toISOString().slice(0, 10)),
+          )
+          .map((a) => a.employeeId),
       ).size,
       workers: workers.length,
       supervisors: employees.filter((e) => e.position === 'SUPERVISOR').length,
@@ -193,8 +207,9 @@ export async function dashboard(p: Principal, query: unknown) {
       machinesRunning: machines.filter((m) => m.status === 'RUNNING').length,
       machinesOffline: machines.filter((m) => ['OFFLINE', 'ERROR'].includes(m.status)).length,
       attendancePercent: Math.min(100, attendancePercent),
-      present: attendance.length,
-      absent: Math.max(0, scheduled.size - attendance.length),
+      present: attended.filter((a) => a.status !== 'HALF_DAY').length,
+      halfDay: attendance.filter((a) => a.status === 'HALF_DAY').length,
+      absent: Math.max(0, scheduled.size - attended.length),
       late: attendance.filter((a) => a.status === 'LATE').length,
       earlyCheckout: attendance.filter((a) => a.earlyDeparture).length,
       openTickets: tickets.filter((t) => !['RESOLVED', 'CLOSED'].includes(t.status)).length,
