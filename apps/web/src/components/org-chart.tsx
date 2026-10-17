@@ -13,6 +13,7 @@ import {
 import { api, title } from '@/lib/api';
 import { useOs } from './shell';
 import { ErrorState, Loading } from './ui/states';
+import { OrgChartViewport } from './org-chart-viewport';
 
 type Person = {
   id: string;
@@ -344,23 +345,18 @@ export function OrgChart({
       {!included.size && !sites.length ? (
         <p>No workforce relationships available.</p>
       ) : (
-        <div
-          className={`org-chart-scroll ${view === 'outline' ? 'org-outline' : ''}`}
-          tabIndex={0}
-          role="group"
-          aria-label="Reporting hierarchy. Scroll to explore; select a person to expand their team."
-        >
+        <OrgChartViewport outline={view === 'outline'}>
           <ul className="org-tree">
             {trees}
             {sites.filter((s) => !s.managerId || !people.has(s.managerId)).map(siteNode)}
           </ul>
-        </div>
+        </OrgChartViewport>
       )}
       <div className="org-footer">
         <span>
           <i /> People <i className="org-site-dot" /> Customer sites
         </span>
-        <span>Select a person to show or hide their team ? Use Outline for a compact view</span>
+        <span>Select a person to show or hide their team · Ctrl + scroll to zoom · Use Outline for a compact view</span>
       </div>
     </section>
   );

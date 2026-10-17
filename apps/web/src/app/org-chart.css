@@ -1,3 +1,54 @@
+.org-chart-frame {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.org-zoom-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+.org-zoom-toolbar button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  background: var(--background);
+  font: inherit;
+  cursor: pointer;
+}
+.org-zoom-toolbar button:disabled { opacity: .4; cursor: default; }
+.org-zoom-toolbar button:focus-visible,
+.org-chart-viewport:focus-visible { outline: 2px solid var(--green); outline-offset: -2px; }
+.org-zoom-toolbar output { min-width: 48px; text-align: center; font-variant-numeric: tabular-nums; font-size: 13px; }
+.org-pan-hint { margin-right: auto; color: var(--muted); font-size: 12px; }
+.org-chart-frame .org-chart-viewport {
+  height: clamp(360px, 65vh, 720px);
+  min-height: 0;
+  padding: 16px;
+  border: 0;
+  border-radius: 0;
+  cursor: grab;
+  overflow-anchor: none;
+}
+.org-chart-content { width: max-content; min-width: 100%; }
+.org-chart-frame .org-panning { cursor: grabbing; user-select: none; }
+@media (max-width: 640px) {
+  .org-pan-hint { display: none; }
+  .org-zoom-toolbar { justify-content: center; }
+  .org-zoom-toolbar button { min-height: 44px; }
+}
 .org-chart-section {
   min-width: 0;
   max-width: 100%;
