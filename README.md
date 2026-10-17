@@ -38,6 +38,8 @@ The seed is additive and rerunnable through deterministic IDs. It does not reset
 
 Supervisors land directly on a daily attendance sheet and can mark themselves and their own assigned workers. Choose a site/date, tap **Present**, **Absent**, or **Half day** beside each person, optionally add notes, then tap **Save attendance**. No check-in/out times or correction reasons are required.
 
+For a local supervisor demo login, set `SEED_SUPERVISOR_EMAIL` and `SEED_SUPERVISOR_PASSWORD` in `.env` before `npm run db:seed`. This links the login to supervisor `UPL-S001`; the development seed also includes 30 days of sample supervisor attendance. Existing production databases use targeted account provisioning rather than the development seed.
+
 Managers open **Attendance** to mark their site supervisors and workers, including correcting marks saved by supervisors. Manager-reviewed marks are locked for supervisors; managers can revise them again. Changes are audited and stale saves are rejected so one person cannot silently overwrite another's changes. Half days count as 0.5 and absences as zero in attendance percentages. Unmarked people remain unmarked rather than being automatically saved as present.
 
 NFC device/card enrollment and tap endpoints remain available for later integration. Existing NFC clock times are retained; daily manual marks do not invent clock times. Apply committed database migrations before deploying this feature.

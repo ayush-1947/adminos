@@ -98,27 +98,42 @@ async function main() {
   if (!email || !password || password.length < 14)
     throw new Error('Set SEED_ADMIN_EMAIL and a 14+ character SEED_ADMIN_PASSWORD');
   const credentials = new Map<string, { email: string; passwordHash: string }>();
-  for (const key of ['ADMIN', 'MANAGER', 'CUSTOMER', 'ACCOUNTANT']) {
+  for (const key of ['ADMIN', 'MANAGER', 'SUPERVISOR', 'CUSTOMER', 'ACCOUNTANT']) {
     const accountEmail = process.env[`SEED_${key}_EMAIL`]?.trim().toLowerCase();
     const accountPassword = process.env[`SEED_${key}_PASSWORD`];
     if (!accountEmail && !accountPassword && key !== 'ADMIN') continue;
-    if (!accountEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(accountEmail) || !accountPassword || accountPassword.length < 14 || Buffer.byteLength(accountPassword, 'utf8') > 72)
-      throw new Error(`Set SEED_${key}_EMAIL and a password of at least 14 characters and at most 72 UTF-8 bytes`);
-    if ([...credentials.values()].some(c => c.email === accountEmail))
+    if (
+      !accountEmail ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(accountEmail) ||
+      !accountPassword ||
+      accountPassword.length < 14 ||
+      Buffer.byteLength(accountPassword, 'utf8') > 72
+    )
+      throw new Error(
+        `Set SEED_${key}_EMAIL and a password of at least 14 characters and at most 72 UTF-8 bytes`,
+      );
+    if ([...credentials.values()].some((c) => c.email === accountEmail))
       throw new Error('Each seeded account must have a different email');
     credentials.set(key, { email: accountEmail, passwordHash: await hash(accountPassword, 12) });
   }
   if (process.argv.includes('--passwords-only')) {
-    await db.$transaction(async tx => {
+    await db.$transaction(async (tx) => {
       for (const [key, credential] of credentials) {
         const userId = key === 'ADMIN' ? adminId : id(`demo:${key}`);
-        await tx.user.update({ where: { id: userId, organizationId }, data: {
-          ...credential, status: 'ACTIVE', deletedAt: null,
-        } });
+        await tx.user.update({
+          where: { id: userId, organizationId },
+          data: {
+            ...credential,
+            status: 'ACTIVE',
+            deletedAt: null,
+          },
+        });
         await tx.session.deleteMany({ where: { userId, organizationId } });
       }
     });
-    console.log(`Updated ${credentials.size} seeded accounts from .env and invalidated their old sessions.`);
+    console.log(
+      `Updated ${credentials.size} seeded accounts from .env and invalidated their old sessions.`,
+    );
     return;
   }
   await db.organization.upsert({
@@ -538,6 +553,29 @@ async function main() {
   for (let day = -29; day <= 0; day++) {
     await db.attendance.createMany({
       skipDuplicates: true,
+      data: districts.map((_, siteIndex) => ({
+        ...common(`attendance:supervisor:${day}:${siteIndex}`),
+        businessUnitId: bu(siteIndex >= 16),
+        siteId: id(`site:${siteIndex}`),
+        employeeId: id(
+          `supervisor:${siteIndex >= 16 ? 12 + ((siteIndex - 16) % 3) : siteIndex % 12}`,
+        ),
+        shiftId: id(siteIndex >= 16 ? 'shift:a' : 'shift:v'),
+        workDate: new Date(new Date(at(day)).toISOString().slice(0, 10)),
+        status:
+          (day + 29 + siteIndex) % 11 === 0
+            ? 'ABSENT'
+            : (day + 29 + siteIndex) % 7 === 0
+              ? 'HALF_DAY'
+              : 'PRESENT',
+        source: 'MANUAL',
+        checkIn: null,
+        checkOut: null,
+        correctionReason: 'Development sample supervisor attendance',
+      })),
+    });
+    await db.attendance.createMany({
+      skipDuplicates: true,
       data: Array.from({ length: 80 }, (_, i) =>
         i % 13 === (day + 29) % 13
           ? null
@@ -739,6 +777,7 @@ async function main() {
   });
   for (const [key, role, name] of [
     ['MANAGER', 'Operations Manager', 'Demo Manager'],
+    ['SUPERVISOR', 'Site Supervisor', 'Demo Supervisor'],
     ['CUSTOMER', 'Customer', 'Demo Customer'],
     ['ACCOUNTANT', 'Accountant', 'Demo Accountant'],
   ]) {
@@ -761,6 +800,8 @@ async function main() {
     });
     if (key === 'MANAGER')
       await db.employee.update({ where: { id: id('manager:0') }, data: { userId: user.id } });
+    if (key === 'SUPERVISOR')
+      await db.employee.update({ where: { id: id('supervisor:0') }, data: { userId: user.id } });
   }
   console.log(
     'Development seed ready: 2 business units, 10 clients, 20 sites, 100 employees, 10 vendors, 10 machines and 30 days of synthetic operational records.',
