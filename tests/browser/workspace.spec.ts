@@ -110,7 +110,12 @@ test('every permitted resource route resolves with a real data response', async 
   for (const [key, resource] of Object.entries(catalog) as [string, { label: string }][]) {
     await page.goto(`/${key}`);
     await expect(
-      page.getByRole('heading', { name: resource.label, exact: true }).first(),
+      page
+        .getByRole('heading', {
+          name: key === 'attendance' ? 'Mark attendance' : resource.label,
+          exact: true,
+        })
+        .first(),
     ).toBeVisible();
     await expect(page.getByText('We couldn’t load this view')).toHaveCount(0);
     const data = await page.request.get(`/api/resources/${key}?limit=1`);

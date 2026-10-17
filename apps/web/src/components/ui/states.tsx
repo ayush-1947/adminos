@@ -1,10 +1,18 @@
+'use client';
+import { useSyncExternalStore } from 'react';
+import { isApiRecovering, subscribeApiRecovery } from '@/lib/api';
 import { AlertCircle, Inbox, Loader2 } from 'lucide-react';
 import { Button } from './button';
 export function Loading({ label = 'Loading operational data…' }: { label?: string }) {
+  const reconnecting = useSyncExternalStore(subscribeApiRecovery, isApiRecovering, () => false);
   return (
     <div className="state" role="status">
       <Loader2 className="animate-spin text-emerald-700" size={24} />
-      <p>{label}</p>
+      <p>
+        {reconnecting
+          ? 'Connecting to the server… This can take about a minute after inactivity.'
+          : label}
+      </p>
     </div>
   );
 }

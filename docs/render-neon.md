@@ -66,6 +66,14 @@ Migrations are deliberately separate from the Render build so a build/preview do
 
 ## 5. Verify
 
+### Intermittent "server unavailable" after inactivity
+
+The Blueprint uses two Free web services. Render can spin each service down after 15 idle minutes and documents roughly one minute to start it again. The frontend may load while its API is still starting, so `/api/*` can temporarily return a gateway HTML response. The frontend now retries only safe reads with a bounded 90-second recovery budget, rejects HTML startup pages as API data, and checks API health before sending login credentials once. It does not automatically replay data-changing requests.
+
+If the error persists after recovery finishes, inspect the API service's startup/runtime logs and verify both its direct `/api/health` and the frontend's `/api/ready`. Confirm `API_INTERNAL_URL` is the API's actual public HTTPS origin at frontend build time, and `APP_ORIGIN` is the frontend's exact HTTPS origin. Database readiness errors require checking Neon connectivity and connection limits. A 502 alone does not distinguish startup, a crashed process, or incorrect proxy configuration.
+
+For an application that must remain available without idle startup delays, use an always-on service instance for the API and frontend. Changing a workspace plan alone does not change a service's compute plan. This code change does not upgrade or bill either service. See [Render's documented Free service limitations](https://render.com/docs/free).
+
 Visit `https://YOUR-FRONTEND.onrender.com/api/ready` and check for success. Sign in with the production administrator and test role isolation, site assignments, invoices, PDF downloads, uploads and logout. Check both services' Render logs if readiness fails.
 
 ## Free plan limits

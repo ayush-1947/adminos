@@ -1,0 +1,34 @@
+{
+  "environment": "isolated synthetic local PostgreSQL 18 / Node v24.11.0",
+  "status": "partial: browser run interrupted",
+  "checks": {
+    "schema": {
+      "status": "pass",
+      "method": "Repository migration SQL applied to an empty disposable database"
+    },
+    "api": {
+      "status": "pass",
+      "testFiles": 7,
+      "tests": 80
+    },
+    "browser": {
+      "status": "partial",
+      "observedPassed": 6,
+      "scheduled": 18,
+      "workflows": [
+        "billing PDFs",
+        "organization chart",
+        "manager profile",
+        "customer profile restrictions",
+        "login warm-up/logout",
+        "workspace gateway and HTML recovery"
+      ]
+    },
+    "load": {
+      "status": "not completed"
+    },
+    "recovery": {
+      "status": "not completed"
+    }
+  }
+}

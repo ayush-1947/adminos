@@ -1,0 +1,11 @@
+# Repeatable audit validation
+
+Read [assessment.md](assessment.md) for findings and coverage limits.
+
+Run `npm run build` first, with `API_INTERNAL_URL=http://localhost:4000` for the web build. Then `npm run audit:local` creates a new synthetic PostgreSQL cluster under ignored `.local/audit-*`, applies the repository migration SQL, seeds random disposable accounts, runs the API and browser suites, measures 80 read requests at concurrency 2, and verifies a cold backup restored into a separate cluster directory. Ports 3000, 4000 and 54339 must be free. It does not use credentials or database URLs from `.env`; external storage is disabled. Microsoft Edge is used on Windows, and Playwright Chromium is needed on other platforms. Keep enough free RAM for PostgreSQL, Next.js and a headless browser. Child services stop when the harness completes. Local database files remain ignored for diagnosis; never commit them.
+
+The harness writes `local-validation.json`, including failures. It applies SQL directly to an empty database; run `prisma migrate deploy` separately in staging to validate Prisma's migration history/deployment behavior. The recovery drill verifies synthetic local PostgreSQL 18 data and schema, not Neon PITR, provider retention, encryption, a production backup, or PostgreSQL 17 compatibility. Load timings include the actual configured API middleware but are a small local workload, not a production capacity certification.
+
+`npm run audit:public` makes only five unauthenticated GET requests to the explicitly assessed Render frontend and writes `public-validation.json`. It does not log in, change data, load test production or access a database console. The file records observed headers/status at a specific time; intermittent outages require provider logs to diagnose.
+
+`npm run audit:inventory` regenerates the route matrix, source hashes and core resolved versions. The inventory lists accessible files and flow coverage; it does not certify an exhaustive manual review of each line. Regenerate the production SBOM with `npm sbom --omit=dev --sbom-format=cyclonedx` after dependency changes. Do not add credentials, screenshots containing personal data, database files or backup archives to this directory.

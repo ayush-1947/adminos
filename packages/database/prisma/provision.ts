@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { hash } from 'bcryptjs';
 import { z } from 'zod';
 import { permissionKeys } from '../../../apps/api/src/modules/resources/catalog';
+import { passwordSchema } from '../../../apps/api/src/modules/auth/password';
 const db = new PrismaClient();
 async function main() {
   const env = z
@@ -11,7 +12,7 @@ async function main() {
       BOOTSTRAP_SLUG: z.string().regex(/^[a-z0-9-]+$/),
       BOOTSTRAP_ADMIN_NAME: z.string().min(2),
       BOOTSTRAP_ADMIN_EMAIL: z.email(),
-      BOOTSTRAP_ADMIN_PASSWORD: z.string().min(14).max(128),
+      BOOTSTRAP_ADMIN_PASSWORD: passwordSchema,
     })
     .parse(process.env);
   const passwordHash = await hash(env.BOOTSTRAP_ADMIN_PASSWORD, 12);
@@ -82,7 +83,7 @@ main()
   .catch((e) => {
     console.error(
       e instanceof z.ZodError
-        ? 'Set all BOOTSTRAP_* variables with a valid email and 14+ character password.'
+        ? 'Set all BOOTSTRAP_* variables with a valid email and a password of at least 14 characters and at most 72 UTF-8 bytes.'
         : e.message,
     );
     process.exitCode = 1;

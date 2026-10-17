@@ -66,6 +66,8 @@ export default function Login() {
               setLoading(true);
               setError('');
               try {
+                // Wait for the API to become reachable before submitting credentials once.
+                await api('/health');
                 await api('/auth/login', {
                   method: 'POST',
                   body: JSON.stringify({ email, password }),
@@ -120,9 +122,7 @@ export default function Login() {
           <div className="login-security">
             <ShieldCheck size={14} /> Secure, role-based access
           </div>
-          <p className="login-note">
-            Need access? Contact your organization administrator.
-          </p>
+          <p className="login-note">Need access? Contact your organization administrator.</p>
         </div>
         <small className="login-copyright">
           © {new Date().getFullYear()} {COMPANY_NAME}. All rights reserved.

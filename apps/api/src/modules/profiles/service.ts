@@ -72,6 +72,9 @@ export async function profileOwner(
 
 function access(owner: { type: string; row: Row }, p: Principal) {
   const management = managerAccess(p);
+  const canWrite = p.permissions.includes(
+    owner.type === 'users' ? 'users:manage' : `${owner.type}:write`,
+  );
   const selfCustomer =
     p.role === 'Customer' && owner.type === 'clients' && owner.row.id === p.clientId;
   const identity =
@@ -79,8 +82,8 @@ function access(owner: { type: string; row: Row }, p: Principal) {
   return {
     management,
     identity,
-    canEdit: management || selfCustomer,
-    canPay: management && ['employees', 'users'].includes(owner.type),
+    canEdit: (management && canWrite) || selfCustomer,
+    canPay: management && canWrite && ['employees', 'users'].includes(owner.type),
   };
 }
 

@@ -47,8 +47,6 @@ export const app = express();
 app.disable('x-powered-by');
 app.use(helmet());
 app.use(cors({ origin: config.APP_ORIGIN, credentials: true }));
-app.use(express.json({ limit: '256kb' }));
-app.use(cookieParser());
 app.use((req, res, next) => {
   req.requestId = randomUUID();
   res.setHeader('X-Request-ID', req.requestId);
@@ -60,6 +58,8 @@ app.use(
   '/api',
   rateLimit({ windowMs: 60000, limit: 300, standardHeaders: 'draft-8', legacyHeaders: false }),
 );
+app.use(express.json({ limit: '256kb' }));
+app.use(cookieParser());
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 app.get('/api/ready', async (_req, res) => {
   await db.$queryRaw`SELECT 1`;
@@ -121,8 +121,12 @@ app.get('/api/auth/me', async (req, res) => {
   res.json({ user, organization, businessUnits, principal: p });
 });
 app.get('/api/org-chart', async (req, res) => res.json(await orgChart(req.principal)));
-app.get('/api/attendance/register', async (req, res) => res.json(await attendanceRegister(req.principal, req.query)));
-app.post('/api/attendance/register', async (req, res) => res.json(await saveAttendanceRegister(req.principal, req.body, req.requestId)));
+app.get('/api/attendance/register', async (req, res) =>
+  res.json(await attendanceRegister(req.principal, req.query)),
+);
+app.post('/api/attendance/register', async (req, res) =>
+  res.json(await saveAttendanceRegister(req.principal, req.body, req.requestId)),
+);
 app.post('/api/auth/logout', async (req, res) => {
   await db.session.deleteMany({
     where: { tokenHash: digest(req.cookies.os_session), userId: req.principal.userId },
@@ -465,6 +469,16 @@ app.use(
     }
     if (error instanceof HttpError) {
       res.status(error.status).json({ error: error.message, requestId: req.requestId });
+      return;
+    }
+    // Body-parser errors carry the submitted body; do not log them as internal errors.
+    const bodyError = error as { type?: string } | null;
+    if (bodyError?.type === 'entity.parse.failed' || bodyError?.type === 'entity.too.large') {
+      const tooLarge = bodyError.type === 'entity.too.large';
+      res.status(tooLarge ? 413 : 400).json({
+        error: tooLarge ? 'Request body exceeds the 256 KB limit' : 'Malformed JSON request',
+        requestId: req.requestId,
+      });
       return;
     }
     if (error instanceof Prisma.PrismaClientKnownRequestError) {

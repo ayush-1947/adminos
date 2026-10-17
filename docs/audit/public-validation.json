@@ -1,0 +1,125 @@
+{
+  "checkedAt": "2026-10-17T16:48:01.693Z",
+  "origin": "https://operations-os-web.onrender.com",
+  "method": "Read-only public HTTPS requests; no credentials or writes",
+  "requests": [
+    {
+      "path": "/",
+      "status": 200,
+      "finalUrl": "https://operations-os-web.onrender.com/",
+      "milliseconds": 733,
+      "headers": {
+        "content-type": "text/html; charset=utf-8",
+        "cache-control": "s-maxage=31536000",
+        "content-security-policy": null,
+        "strict-transport-security": null,
+        "x-frame-options": "DENY",
+        "x-content-type-options": "nosniff",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "access-control-allow-origin": null,
+        "access-control-allow-credentials": null,
+        "x-request-id": null
+      }
+    },
+    {
+      "path": "/login",
+      "status": 200,
+      "finalUrl": "https://operations-os-web.onrender.com/login",
+      "milliseconds": 95,
+      "headers": {
+        "content-type": "text/html; charset=utf-8",
+        "cache-control": "s-maxage=31536000",
+        "content-security-policy": null,
+        "strict-transport-security": null,
+        "x-frame-options": "DENY",
+        "x-content-type-options": "nosniff",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "access-control-allow-origin": null,
+        "access-control-allow-credentials": null,
+        "x-request-id": null
+      }
+    },
+    {
+      "path": "/api/health",
+      "status": 502,
+      "finalUrl": "https://operations-os-web.onrender.com/api/health",
+      "milliseconds": 250,
+      "headers": {
+        "content-type": "text/html; charset=utf-8",
+        "cache-control": null,
+        "content-security-policy": null,
+        "strict-transport-security": null,
+        "x-frame-options": null,
+        "x-content-type-options": null,
+        "referrer-policy": null,
+        "access-control-allow-origin": null,
+        "access-control-allow-credentials": null,
+        "x-request-id": null
+      }
+    },
+    {
+      "path": "/api/ready",
+      "status": 502,
+      "finalUrl": "https://operations-os-web.onrender.com/api/ready",
+      "milliseconds": 425,
+      "headers": {
+        "content-type": "text/html; charset=utf-8",
+        "cache-control": null,
+        "content-security-policy": null,
+        "strict-transport-security": null,
+        "x-frame-options": null,
+        "x-content-type-options": null,
+        "referrer-policy": null,
+        "access-control-allow-origin": null,
+        "access-control-allow-credentials": null,
+        "x-request-id": null
+      }
+    },
+    {
+      "path": "/api/auth/me",
+      "status": 502,
+      "finalUrl": "https://operations-os-web.onrender.com/api/auth/me",
+      "milliseconds": 237,
+      "headers": {
+        "content-type": "text/html; charset=utf-8",
+        "cache-control": null,
+        "content-security-policy": null,
+        "strict-transport-security": null,
+        "x-frame-options": null,
+        "x-content-type-options": null,
+        "referrer-policy": null,
+        "access-control-allow-origin": null,
+        "access-control-allow-credentials": null,
+        "x-request-id": null
+      }
+    }
+  ],
+  "passed": false,
+  "previousChecks": [
+    {
+      "checkedAt": "2026-10-17T07:42:20.035Z",
+      "statuses": [
+        {
+          "path": "/",
+          "status": 200
+        },
+        {
+          "path": "/login",
+          "status": 200
+        },
+        {
+          "path": "/api/health",
+          "status": 200
+        },
+        {
+          "path": "/api/ready",
+          "status": 200
+        },
+        {
+          "path": "/api/auth/me",
+          "status": 401
+        }
+      ]
+    }
+  ]
+}

@@ -43,6 +43,9 @@ beforeAll(async () => {
     for (const key of [
       'employees:read',
       'clients:read',
+      ...(['Super Admin', 'Operations Manager'].includes(name)
+        ? ['employees:write', 'clients:write']
+        : []),
       ...(name === 'Super Admin' ? ['users:manage'] : []),
     ]) {
       const permission = await db.permission.upsert({
@@ -200,6 +203,33 @@ afterAll(async () => {
 });
 
 describe('Private people profiles', () => {
+  it('honors revoked employee write permission on dedicated profile workflows', async () => {
+    const session = await db.session.findFirstOrThrow({
+      where: { tokenHash: digest(managerCookie.slice('os_session='.length)) },
+      include: { user: true },
+    });
+    const grant = await db.rolePermission.findFirstOrThrow({
+      where: { roleId: session.user.roleId, permission: { key: 'employees:write' } },
+    });
+    await db.rolePermission.update({ where: { id: grant.id }, data: { deletedAt: new Date() } });
+    try {
+      const profile = await get(path(), managerCookie);
+      expect(profile.status).toBe(200);
+      expect(profile.body.access.canEdit).toBe(false);
+      expect(profile.body.access.canPay).toBe(false);
+      expect((await patch(path(), { phone: 'forbidden' }, managerCookie)).status).toBe(403);
+      expect((await post(`${path()}/payments`, managerCookie).send({})).status).toBe(403);
+      expect(
+        (
+          await post(`${path()}/assets`, managerCookie)
+            .field('kind', 'PHOTO')
+            .attach('file', image, { filename: 'test.png', contentType: 'image/png' })
+        ).status,
+      ).toBe(403);
+    } finally {
+      await db.rolePermission.update({ where: { id: grant.id }, data: { deletedAt: null } });
+    }
+  });
   it('stores profile details and pay without exposing internal data to customers', async () => {
     const saved = await patch(
       path(),

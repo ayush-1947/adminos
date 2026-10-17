@@ -3,10 +3,11 @@ import { hash } from 'bcryptjs';
 import { db } from '../../lib/db';
 import { assert } from '../../lib/errors';
 import { requirePermission, type Principal } from './policy';
+import { passwordSchema } from './password';
 export const userSchema = z.strictObject({
   name: z.string().min(2).max(100),
   email: z.email(),
-  password: z.string().min(14).max(128),
+  password: passwordSchema,
   roleId: z.uuid(),
   businessUnitId: z.uuid().nullable(),
   employeeId: z.uuid().optional(),
@@ -88,11 +89,19 @@ export async function createUser(body: unknown, p: Principal, requestId: string)
         businessUnitId: true,
       },
     });
-    if (data.employeeId)
-      await tx.employee.update({
-        where: { id: data.employeeId },
+    if (data.employeeId) {
+      const linked = await tx.employee.updateMany({
+        where: {
+          id: data.employeeId,
+          organizationId: p.organizationId,
+          businessUnitId: data.businessUnitId || undefined,
+          userId: null,
+          deletedAt: null,
+        },
         data: { userId: user.id, updatedBy: p.userId },
       });
+      assert(linked.count === 1, 409, 'Employee is unavailable or already linked to a user');
+    }
     await tx.auditLog.create({
       data: {
         organizationId: p.organizationId,

@@ -20,7 +20,10 @@
     "db:local": "node scripts/local-db.mjs",
     "format": "prettier --write apps packages scripts docs *.json *.yml",
     "test:e2e": "playwright test",
-    "provision": "tsx packages/database/prisma/provision.ts"
+    "provision": "tsx packages/database/prisma/provision.ts",
+    "audit:inventory": "node scripts/audit-inventory.mjs",
+    "audit:local": "node scripts/audit-local.mjs",
+    "audit:public": "node scripts/audit-public.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
