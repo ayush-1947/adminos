@@ -1855,6 +1855,9 @@ footer i {
   width: 100%;
   max-width: 355px;
 }
+.login-mobile-brand {
+  display: none;
+}
 .login-icon {
   width: 50px;
   height: 50px;
@@ -2373,7 +2376,39 @@ footer i {
   }
   .login-form-wrap {
     min-height: 100vh;
-    padding: 40px 25px;
+    min-height: max(100svh, 640px);
+    padding: 110px 25px 80px;
+  }
+  .login-mobile-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: absolute;
+    top: 24px;
+    left: 25px;
+    max-width: calc(100% - 100px);
+    color: var(--green);
+  }
+  .login-mobile-brand svg {
+    flex-shrink: 0;
+  }
+  .login-mobile-brand strong {
+    display: block;
+    font-size: 22px;
+    line-height: 1.2;
+    letter-spacing: -0.7px;
+    color: var(--ink);
+  }
+  .login-mobile-brand span {
+    display: block;
+    margin-top: 4px;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1.8px;
+    color: var(--muted);
+  }
+  .login-theme {
+    right: 20px;
   }
   .login-form h2 {
     font-size: 25px;

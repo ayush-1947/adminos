@@ -44,6 +44,13 @@ export default function Login() {
         </div>
       </section>
       <section className="login-form-wrap">
+        <div className="login-mobile-brand">
+          <Layers3 size={28} aria-hidden="true" />
+          <div>
+            <strong>{BRAND_NAME}</strong>
+            <span>OPERATIONS OS</span>
+          </div>
+        </div>
         <div className="login-theme">
           <ThemeToggle />
         </div>
