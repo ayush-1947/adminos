@@ -1,6 +1,6 @@
 // Targeted credential synchronization. Does not insert demo operational data.
 import 'dotenv/config';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, type Prisma } from '@prisma/client';
 import { compare, hash } from 'bcryptjs';
 import { passwordSchema } from '../../../apps/api/src/modules/auth/password';
 const db = new PrismaClient();
@@ -12,7 +12,11 @@ const accounts = [
   ['SUPERVISOR', 'Site Supervisor'],
 ] as const;
 async function main() {
-  const prepared = [];
+  const prepared: {
+    user: Prisma.UserGetPayload<{ include: { role: true } }>;
+    password: string;
+    passwordHash: string;
+  }[] = [];
   for (const [key, role] of accounts) {
     const email = process.env[`SEED_${key}_EMAIL`]?.trim().toLowerCase();
     const password = passwordSchema.parse(process.env[`SEED_${key}_PASSWORD`]);
@@ -71,11 +75,11 @@ async function main() {
   });
   if (
     supervisor.name !== 'Diya Patil' ||
-    sites.length !== 2 ||
+    sites.length !== 4 ||
     new Set(assignments.map((a) => a.employeeId)).size !== 8
   )
     throw new Error(
-      'Supervisor must be Diya Patil with exactly 2 sites and 8 workers; no changes applied',
+      'Supervisor must be Diya Patil with exactly 4 sites and 8 workers; no changes applied',
     );
   await db.$transaction(
     async (tx) => {

@@ -41,7 +41,7 @@ The worker starts only when all required Meta and organization settings are pres
 4. Set the Meta environment configuration and publish/subscribe the Flow as above.
 5. Test supervisor GPS/photo start/stop on an actual phone at an assigned site, manager review, and a real WhatsApp registration.
 
-`npm run db:sync:accounts` is a targeted existing-account credential sync using the five SEED_* email/password pairs from the process environment. It requires all accounts in one organization and verifies Diya Patil's exact two-site/eight-worker access before writing. It resets only those passwords/statuses and revokes their sessions, preserving operational data. Never commit those environment values. It is separate from the development seed.
+`npm run db:sync:accounts` is a targeted existing-account credential sync using the five SEED_* email/password pairs from the process environment. It requires all accounts in one organization and verifies Diya Patil's four-site/eight-worker access before writing. It resets only those passwords/statuses and revokes their sessions, preserving operational data. Never commit those environment values. It is separate from the development seed.
 
 ## Availability investigation
 
@@ -52,3 +52,14 @@ The direct production API health/readiness and proxied frontend health probes ti
 ## Local verification incident
 
 A first run of the new test failed before a test organization was created, then its original cleanup accidentally issued undefined organization filters. Local lead, notification and audit rows were deleted before a foreign-key restriction stopped further cleanup. Production was not involved. Cleanup now allocates the isolated UUID before setup and checks it exists before deletion. The rerunnable development seed restored synthetic lead fixtures; deleted local notification/audit history cannot be reconstructed from that seed.
+
+## Diya Patil: Jogeshwari attendance test sites
+
+`npm run db:provision:diya-sites` previews two additional sites; append `-- --apply` to create/assign them. Load the intended production environment explicitly when running against production. The script validates Diya's linked employee, reporting manager and same-organization administrator, uses a transaction, and refuses conflicting existing site ownership. It is not part of application startup or automatic deployment.
+
+- Railwaymen's Apna Ghar Society, Jogeshwari: **19.1289586, 72.8572207**, from the [A Group map listing](https://yappe.in/maharashtra/mumbai/railwaymen-s-apna-ghar-chs-a-group/2305594). This is the public society pin, not an on-site gate survey.
+- Ismail Yusuf College: **19.1335208, 72.8540501**, from the Google Maps directions link on the [college's official contact page](https://www.ismailyusufcollege.ac.in/UserPanel/DisplayPage.aspx?page=ii).
+
+The schema requires a client for each site, so these use a separate **Geolocation verification sites / Internal attendance testing** client group. No service contracts, customer login links, worker allocations or attendance marks are created. Existing site and worker assignments are retained. Diya's access becomes four sites with her existing eight workers. Reruns do not duplicate records and preserve later admin corrections to the GPS pins.
+
+Select either site under Attendance and test from within the existing 300-metre radius. An admin can refine the coordinates under Sites if the exact gate differs from these initial public map pins. Normal work-calendar, missed-sheet and one-start/one-stop-per-day rules still apply; this provisioning does not bypass them.

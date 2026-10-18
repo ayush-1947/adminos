@@ -24,7 +24,8 @@
     "audit:inventory": "node scripts/audit-inventory.mjs",
     "audit:local": "node scripts/audit-local.mjs",
     "audit:public": "node scripts/audit-public.mjs",
-    "db:sync:accounts": "tsx packages/database/prisma/sync-production-accounts.ts"
+    "db:sync:accounts": "tsx packages/database/prisma/sync-production-accounts.ts",
+    "db:provision:diya-sites": "tsx packages/database/prisma/provision-diya-sites.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
