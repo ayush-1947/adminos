@@ -1,4 +1,5 @@
 import express from 'express';
+import { readCalendar, saveCalendar, saveCalendarDay } from './modules/attendance/calendar';
 import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
@@ -132,6 +133,15 @@ app.get('/api/auth/me', async (req, res) => {
   res.json({ user, organization, businessUnits, principal: p });
 });
 app.use('/api/flowbridge', flowRouter);
+app.get('/api/admin/work-calendar', async (req, res) =>
+  res.json(await readCalendar(req.principal, req.query)),
+);
+app.put('/api/admin/work-calendar', async (req, res) =>
+  res.json(await saveCalendar(req.principal, req.body, req.requestId)),
+);
+app.put('/api/admin/work-calendar/day', async (req, res) =>
+  res.json(await saveCalendarDay(req.principal, req.body, req.requestId)),
+);
 app.get('/api/staff-attendance', async (req, res) => res.json(await staffOverview(req.principal)));
 app.post('/api/staff-attendance/manual', async (req, res) =>
   res.json(await manualStaff(req.principal, req.body, req.requestId)),
@@ -552,11 +562,9 @@ app.use(
       }
     }
     if (error instanceof multer.MulterError) {
-      res
-        .status(422)
-        .json({
-          error: 'File exceeds upload limits (2 MB for attendance photos; 10 MB for other uploads)',
-        });
+      res.status(422).json({
+        error: 'File exceeds upload limits (2 MB for attendance photos; 10 MB for other uploads)',
+      });
       return;
     }
     if (config.NODE_ENV === 'test') console.error(error);

@@ -6,7 +6,6 @@ import { useEffect, useState } from 'react';
 import { api, type Row } from '@/lib/api';
 import { useOs } from './shell';
 import { Dashboard } from './dashboard';
-import { AttendanceRegister } from './attendance-register';
 import { ProfileLink } from './profile';
 import { Loading, ErrorState, Empty } from './ui/states';
 export function WorkspaceHome() {
@@ -15,7 +14,7 @@ export function WorkspaceHome() {
     identity.principal.role === 'Site Supervisor' &&
     identity.principal.permissions.includes('attendance:read')
   )
-    return <StaffAttendance workers />;
+    return <StaffAttendance />;
   return identity.principal.role === 'Customer' ? (
     <CustomerHome />
   ) : (

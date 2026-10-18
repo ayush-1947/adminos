@@ -4,6 +4,7 @@ import { randomUUID, createHmac } from 'node:crypto';
 import { app } from '../src/app';
 import { db } from '../src/lib/db';
 import { digest, newToken } from '../src/modules/auth/service';
+import { workingOn } from '../src/modules/attendance/calendar';
 import { distanceMeters, istDate } from '../src/modules/attendance/staff';
 import { validSignature, greeting, runFlowJobs } from '../src/modules/flowbridge/service';
 const origin = process.env.APP_ORIGIN || 'http://localhost:3000';
@@ -129,6 +130,8 @@ afterAll(async () => {
     'flowContact',
     'flowEvent',
     'flowCampaign',
+    'workCalendarDay',
+    'workCalendar',
     'staffLeave',
     'staffDay',
     'notification',
@@ -223,6 +226,16 @@ describe('Staff attendance', () => {
     expect(r.checkIn).toBeNull();
   });
   it('routes prior missed days to the manager and prevents self-review', async () => {
+    await db.workCalendar.upsert({
+      where: { organizationId: org },
+      create: { organizationId: org, trackingFrom: new Date(yesterday) },
+      update: { trackingFrom: new Date(yesterday) },
+    });
+    await db.user.update({
+      where: { id: supervisor.id },
+      data: { createdAt: new Date(`${yesterday}T00:00:00Z`) },
+    });
+
     expect(
       (
         await post('/staff-attendance/leaves', supervisor.cookie, {
@@ -271,6 +284,142 @@ describe('Staff attendance', () => {
     ).toBe('LEAVE');
   });
 });
+describe('Admin work calendar and missed-day enforcement', () => {
+  const beforeYesterday = new Date(new Date(yesterday).getTime() - 86400000)
+    .toISOString()
+    .slice(0, 10);
+  const calendar = (cookie: string, body: unknown, path = '') =>
+    request(app)
+      .put(`/api/admin/work-calendar${path}`)
+      .set('Cookie', cookie)
+      .set('Origin', origin)
+      .send(body);
+  const overview = () => request(app).get('/api/staff-attendance').set('Cookie', supervisor.cookie);
+  it('applies explicit working/non-working overrides ahead of the weekly schedule', () => {
+    expect(workingOn('2026-10-18', [1, 2, 3, 4, 5], [])).toBe(false);
+    expect(
+      workingOn('2026-10-18', [1, 2, 3, 4, 5], [{ date: new Date('2026-10-18'), working: true }]),
+    ).toBe(true);
+    expect(
+      workingOn('2026-10-19', [1, 2, 3, 4, 5], [{ date: new Date('2026-10-19'), working: false }]),
+    ).toBe(false);
+  });
+  it('requires Super Admin to edit the work calendar', async () => {
+    expect(
+      (
+        await calendar(manager.cookie, {
+          workingWeekdays: [1, 2, 3, 4, 5],
+          trackingFrom: yesterday,
+        })
+      ).status,
+    ).toBe(403);
+    expect(
+      (await request(app).get('/api/admin/work-calendar').set('Cookie', supervisor.cookie)).status,
+    ).toBe(403);
+    expect(
+      (
+        await calendar(admin.cookie, {
+          workingWeekdays: [0, 1, 2, 3, 4, 5, 6],
+          trackingFrom: beforeYesterday,
+        })
+      ).status,
+    ).toBe(200);
+    expect(
+      (await request(app).get('/api/admin/work-calendar').set('Cookie', admin.cookie)).body
+        .trackingFrom,
+    ).toBe(beforeYesterday);
+  });
+  it('blocks start for a wholly missed working day and skips holidays', async () => {
+    await db.user.update({
+      where: { id: supervisor.id },
+      data: { createdAt: new Date(beforeYesterday) },
+    });
+    await db.staffDay.deleteMany({
+      where: { organizationId: org, userId: supervisor.id, workDate: new Date(istDate()) },
+    });
+    expect((await overview()).body.calendar.missedDays).toEqual([beforeYesterday]);
+    expect((await clock()).status).toBe(409);
+    expect(
+      (
+        await calendar(
+          admin.cookie,
+          { date: beforeYesterday, working: false, label: 'Holiday' },
+          '/day',
+        )
+      ).status,
+    ).toBe(200);
+    expect((await overview()).body.calendar.missedDays).toEqual([]);
+    expect(
+      (
+        await post('/staff-attendance/leaves', supervisor.cookie, {
+          date: beforeYesterday,
+          reason: 'Not a missed working date',
+        })
+      ).status,
+    ).toBe(422);
+    expect(
+      (await calendar(admin.cookie, { date: istDate(), working: false, label: 'Off' }, '/day'))
+        .status,
+    ).toBe(200);
+    expect((await clock()).status).toBe(422);
+    expect(
+      (
+        await calendar(
+          admin.cookie,
+          { date: istDate(), working: true, label: 'Special working day' },
+          '/day',
+        )
+      ).status,
+    ).toBe(200);
+    expect((await clock()).status).toBe(200);
+    expect((await clock('STOP')).status).toBe(200);
+  });
+  it('requires a sheet for an unfinished day, allows start after submission and restores the requirement after rejection', async () => {
+    await db.staffDay.deleteMany({
+      where: { organizationId: org, userId: supervisor.id, workDate: new Date(istDate()) },
+    });
+    await calendar(admin.cookie, { date: beforeYesterday, working: null }, '/day');
+    await db.staffDay.create({
+      data: {
+        organizationId: org,
+        userId: supervisor.id,
+        workDate: new Date(beforeYesterday),
+        source: 'GPS_PHOTO',
+        checkIn: new Date(`${beforeYesterday}T08:00:00+05:30`),
+      },
+    });
+    expect((await overview()).body.calendar.missedDays).toEqual([beforeYesterday]);
+    expect(
+      (
+        await post('/staff-attendance/leaves', supervisor.cookie, {
+          date: beforeYesterday,
+          reason: 'Missed the stop time',
+        })
+      ).status,
+    ).toBe(201);
+    expect((await overview()).body.calendar.missedDays).toEqual([]);
+    expect((await clock()).status).toBe(200);
+    const leave = await db.staffLeave.findUniqueOrThrow({
+      where: { userId_workDate: { userId: supervisor.id, workDate: new Date(beforeYesterday) } },
+    });
+    await request(app)
+      .patch(`/api/staff-attendance/leaves/${leave.id}`)
+      .set('Cookie', manager.cookie)
+      .set('Origin', origin)
+      .send({ status: 'REJECTED' });
+    expect((await overview()).body.calendar.missedDays).toEqual([beforeYesterday]);
+    expect(
+      (
+        await post('/staff-attendance/leaves', supervisor.cookie, {
+          date: beforeYesterday,
+          reason: 'Clarification for manager review',
+        })
+      ).status,
+    ).toBe(201);
+    expect((await overview()).body.calendar.missedDays).toEqual([]);
+  });
+});
+
 describe('Integrated FlowBridge', () => {
   it('validates raw signatures and greeting triggers', () => {
     const raw = Buffer.from('{"test":1}');

@@ -17,6 +17,8 @@ model Organization {
   deletedAt DateTime? @map("deleted_at")
   name String
   slug String @unique
+  workCalendar WorkCalendar?
+  calendarDays WorkCalendarDay[]
   staffDays StaffDay[]
   staffLeaves StaffLeave[]
   flowContacts FlowContact[]
@@ -1384,4 +1386,26 @@ model FlowCampaign {
   createdAt DateTime @default(now())
   @@index([organizationId])
   @@map("flow_campaigns")
+}
+
+
+model WorkCalendar {
+  organizationId String @id @db.Uuid
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  workingWeekdays Int[] @default([0, 1, 2, 3, 4, 5, 6])
+  trackingFrom DateTime @default(now()) @db.Date
+  updatedAt DateTime @updatedAt
+  @@map("work_calendars")
+}
+
+model WorkCalendarDay {
+  id String @id @default(uuid()) @db.Uuid
+  organizationId String @db.Uuid
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  date DateTime @db.Date
+  working Boolean
+  label String @default("")
+  updatedAt DateTime @updatedAt
+  @@unique([organizationId, date])
+  @@map("work_calendar_days")
 }

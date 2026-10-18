@@ -143,7 +143,7 @@ export function AttendanceRegister() {
           <span className="attendance-eyebrow">
             <CalendarCheck size={17} /> DAILY ATTENDANCE
           </span>
-          <h1>Mark attendance</h1>
+          <h1>Staff attendance sheet</h1>
           <p>Choose a status beside each person. Add a note if needed, then save.</p>
         </div>
       </header>
@@ -215,66 +215,66 @@ export function AttendanceRegister() {
               <p className="attendance-empty">
                 No sites are assigned to you. Ask your administrator to link your site.
               </p>
-            ) : !data.rows.length ? (
-              <p className="attendance-empty">
-                No supervisors or workers are assigned here for this date.
-              </p>
+            ) : !data.rows.some((person) => person.position === 'WORKER') ? (
+              <p className="attendance-empty">No workers are assigned here for this date.</p>
             ) : (
               <div className="attendance-people">
-                {data.rows.map((person) => {
-                  const draft = drafts[person.employeeId] || person;
-                  const disabled = saving || !data.canWrite || person.locked || !person.shiftId;
-                  return (
-                    <article className="attendance-person" key={person.employeeId}>
-                      <div className="attendance-person-name">
-                        <strong>{person.name}</strong>
-                        <span>
-                          {person.position === 'SUPERVISOR' ? 'Supervisor' : 'Worker'} ·{' '}
-                          {person.employeeCode}
-                        </span>
-                        {person.locked && (
-                          <small>{person.lockReason || 'Reviewed by manager'}</small>
-                        )}
-                        {!person.shiftId && <small>A shift needs to be configured</small>}
-                      </div>
-                      <div
-                        className="attendance-statuses"
-                        role="group"
-                        aria-label={`Attendance for ${person.name}`}
-                      >
-                        {choices.map((choice) => (
-                          <button
-                            type="button"
-                            key={choice.value}
-                            className={`attendance-choice attendance-${choice.value.toLowerCase()}`}
-                            aria-pressed={draft.status === choice.value}
+                {data.rows
+                  .filter((person) => person.position === 'WORKER')
+                  .map((person) => {
+                    const draft = drafts[person.employeeId] || person;
+                    const disabled = saving || !data.canWrite || person.locked || !person.shiftId;
+                    return (
+                      <article className="attendance-person" key={person.employeeId}>
+                        <div className="attendance-person-name">
+                          <strong>{person.name}</strong>
+                          <span>
+                            {person.position === 'SUPERVISOR' ? 'Supervisor' : 'Worker'} ·{' '}
+                            {person.employeeCode}
+                          </span>
+                          {person.locked && (
+                            <small>{person.lockReason || 'Reviewed by manager'}</small>
+                          )}
+                          {!person.shiftId && <small>A shift needs to be configured</small>}
+                        </div>
+                        <div
+                          className="attendance-statuses"
+                          role="group"
+                          aria-label={`Attendance for ${person.name}`}
+                        >
+                          {choices.map((choice) => (
+                            <button
+                              type="button"
+                              key={choice.value}
+                              className={`attendance-choice attendance-${choice.value.toLowerCase()}`}
+                              aria-pressed={draft.status === choice.value}
+                              disabled={disabled}
+                              onClick={() => change(person, { status: choice.value })}
+                            >
+                              {draft.status === choice.value && <Check size={16} />}
+                              {choice.label}
+                            </button>
+                          ))}
+                        </div>
+                        <label className="attendance-note">
+                          <span>
+                            Notes <small>(optional)</small>
+                          </span>
+                          <input
+                            aria-label={`Notes for ${person.name}`}
+                            placeholder="Add a note…"
+                            maxLength={1000}
                             disabled={disabled}
-                            onClick={() => change(person, { status: choice.value })}
-                          >
-                            {draft.status === choice.value && <Check size={16} />}
-                            {choice.label}
-                          </button>
-                        ))}
-                      </div>
-                      <label className="attendance-note">
-                        <span>
-                          Notes <small>(optional)</small>
-                        </span>
-                        <input
-                          aria-label={`Notes for ${person.name}`}
-                          placeholder="Add a note…"
-                          maxLength={1000}
-                          disabled={disabled}
-                          value={draft.notes}
-                          onChange={(e) => change(person, { notes: e.target.value })}
-                        />
-                      </label>
-                    </article>
-                  );
-                })}
+                            value={draft.notes}
+                            onChange={(e) => change(person, { notes: e.target.value })}
+                          />
+                        </label>
+                      </article>
+                    );
+                  })}
               </div>
             )}
-            {!!data.rows.length && (
+            {!!data.rows.some((person) => person.position === 'WORKER') && (
               <div className="attendance-save-bar">
                 <span>
                   {dirty

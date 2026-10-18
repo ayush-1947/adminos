@@ -83,6 +83,7 @@ const nav = [
       ['reports', 'Reports & analytics', FileChartColumn],
       ['documents', 'Documents', FileText],
       ['settings', 'Settings & access', Settings2],
+      ['work-calendar', 'Work calendar', CalendarCheck],
       ['lead-generation', 'Lead generation', Sprout],
       ['flowbridge', 'FlowBridge', Handshake],
     ],
@@ -131,7 +132,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
     key === '' ||
     (['flowbridge', 'lead-generation'].includes(key) &&
       identity.principal.role === 'Super Admin') ||
-    (key === 'staff-attendance' &&
+    (key === 'work-calendar' && identity.principal.role === 'Super Admin') ||
+    (['attendance', 'staff-attendance'].includes(key) &&
       [
         'Super Admin',
         'Operations Manager',
@@ -156,6 +158,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           reports: 'Reports & analytics',
           settings: 'Settings & access',
           'staff-attendance': 'Staff attendance',
+          'work-calendar': 'Work calendar',
           'lead-generation': 'Lead generation',
           flowbridge: 'FlowBridge',
           profiles: 'Profile',

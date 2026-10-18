@@ -1,3 +1,4 @@
+import { calendarState } from './calendar';
 import { randomUUID } from 'node:crypto';
 import { Prisma } from '@prisma/client';
 import { z } from 'zod';
@@ -122,7 +123,8 @@ export async function staffOverview(p: Principal) {
           take: 100,
         })
       : [];
-  return { today: istDate(), records, leaves, inbox, sites, team };
+  const calendar = await calendarState(p);
+  return { today: istDate(), records, leaves, inbox, sites, team, calendar };
 }
 export const clockSchema = z.strictObject({
   action: z.enum(['START', 'STOP']),
@@ -194,13 +196,12 @@ export async function clockStaff(
       );
       if (b.action === 'START') {
         assert(!existing, 409, 'Attendance has already started today');
-        const open = await tx.staffDay.findFirst({
-          where: { userId: p.userId, checkIn: { not: null }, checkOut: null, source: 'GPS_PHOTO' },
-        });
+        const state = await calendarState(p, tx);
+        assert(state.workingToday, 422, 'Today is a non-working day in the admin calendar');
         assert(
-          !open,
+          !state.missedDays.length,
           409,
-          'A previous day is unfinished. Submit a leave/correction sheet for that date and ask your manager to review it',
+          'Fill the sheet for previous missed working days before starting attendance',
         );
         await tx.staffDay.create({
           data: {
@@ -297,6 +298,14 @@ export async function requestLeave(p: Principal, input: unknown) {
     .strictObject({ date: z.iso.date(), reason: z.string().trim().min(5).max(2000) })
     .parse(input);
   assert(b.date < istDate(), 422, 'Use the leave sheet for a previous missed or unfinished day');
+  if (p.role === 'Site Supervisor') {
+    const state = await calendarState(p);
+    assert(
+      state.missedDays.includes(b.date),
+      422,
+      'A sheet is only available for a missed or unfinished working day',
+    );
+  }
   const reviewerId = await reviewer(p);
   return db.$transaction(async (tx) => {
     const attendance = await tx.staffDay.findUnique({

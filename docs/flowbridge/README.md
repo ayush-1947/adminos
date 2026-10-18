@@ -1,12 +1,16 @@
 # Staff attendance and FlowBridge release
 
-Supervisor attendance uses the separate `staff_days` table. Workers continue using the existing manual register. Supervisors land on the GPS/photo panel followed by their worker sheet. The old supervisor row is read-only for supervisors; managers can still correct historic manual registers.
+Supervisor attendance uses the separate `staff_days` table. **Attendance** contains the supervisor's own start/stop workflow; **Staff attendance** contains only the worker/team sheet. Managers, business managers, accountants and Finance/Admin also use **Attendance** for their own manual marks. Accounts without employee profiles are supported.
 
-Start and stop each require an assigned active site, JPEG/PNG photo (up to 2 MB), coordinates captured within two minutes, GPS accuracy within 200 metres, and distance within 300 metres of the configured site coordinates. Timestamps come from the server and work dates use IST. GPS is browser-supplied evidence, not proof against device spoofing. Photos are private PostgreSQL byte records with authenticated owner/manager/admin downloads. Camera capture is requested on supported mobile browsers; file selection remains supported.
+Clicking Start time or Stop time captures the current location and opens a live camera preview. Front/back controls select the camera; a device with no rear camera reports that it is unavailable. There is no file picker or gallery-upload fallback. Capture photo and mark attendance takes a new JPEG from the live stream and refreshes the location before submitting. Streams stop on cancel, camera switch, successful submission and navigation. Camera errors and permission denial leave attendance unchanged. Use HTTPS and allow camera/location access.
 
-Managers, business managers, accountants and Finance/Admin mark their own daily status manually in **Staff attendance**. Accounts without employee profiles are supported. Supervisors cannot use that endpoint. This does not block login or work on other modules when location permission is unavailable.
+The API continues to require an assigned active site, JPEG/PNG photo (up to 2 MB), coordinates captured within two minutes, GPS accuracy within 200 metres, and distance within 300 metres of the site's coordinates. Timestamps come from the server and work dates use IST. GPS and camera metadata are browser-supplied evidence, not proof against modified clients or device spoofing. Photos remain private PostgreSQL records with authenticated downloads.
 
-Previous missed or unfinished days can be submitted through the leave sheet. Routing uses the linked employee's reporting manager, then the site's linked manager, then a different active Super Admin. Requests are delivered through in-app notifications and the review inbox. Only that reviewer or a Super Admin can approve/reject, and self-review is forbidden. Approval records LEAVE; it does not fabricate a missing check-out time. Original GPS/photo evidence remains. Rejected requests can be resubmitted. An unfinished previous GPS day must receive manager approval before a new start.
+**Super Admin > Work calendar** controls recurring working weekdays, a tracking start date, and individual holidays or special working dates. Date-specific overrides take precedence over the weekly schedule. Clearing an override restores the weekly rule. All seven days are working by default until the administrator configures the schedule; no weekend assumptions are made. The migration begins tracking at release for existing organizations; older dates are not automatically treated as missed. New-account checks begin no earlier than the account creation date. Admin changes are audited and apply across the organization; existing attendance evidence is retained.
+
+A supervisor with a missing or unfinished previous working day sees **Fill sheet** in place of Start time. Selecting a past missed date also offers only Fill sheet. Non-working days and completed dates do not offer a sheet. Each outstanding day must have a submitted sheet before starting today; pending submissions count as submitted, and rejected sheets become outstanding again. A Stop time already in progress stays available even if the calendar subsequently changes. The API enforces these rules as well as the screen.
+
+Sheets go to the reporting manager (then site manager, then another active Super Admin as fallback), with an in-app notification and review inbox. Only the reviewer or a Super Admin can approve/reject; self-review is forbidden. Approval records LEAVE without inventing missing clock times. Rejected requests can be resubmitted.
 
 ## FlowBridge integration
 
@@ -32,7 +36,7 @@ The worker starts only when all required Meta and organization settings are pres
 ## Deployment
 
 1. Run typecheck, API tests, and production build against the local/staging database.
-2. Apply `20261018070000_staff_attendance_flowbridge` using `prisma migrate deploy`. This migration adds tables only and preserves existing attendance, users and assignments.
+2. Apply `20261018070000_staff_attendance_flowbridge` and `20261018110000_work_calendar` using `prisma migrate deploy`. This migration adds tables only and preserves existing attendance, users and assignments.
 3. Deploy the API and frontend together; the background worker requires the new tables.
 4. Set the Meta environment configuration and publish/subscribe the Flow as above.
 5. Test supervisor GPS/photo start/stop on an actual phone at an assigned site, manager review, and a real WhatsApp registration.

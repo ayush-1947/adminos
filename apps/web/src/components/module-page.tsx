@@ -1,5 +1,6 @@
 'use client';
-import { StaffAttendance } from './staff-attendance';
+import { WorkCalendar } from './work-calendar';
+import { StaffAttendance, StaffHistory, staffAttendanceRoles } from './staff-attendance';
 import { FlowBridge } from './flowbridge';
 import { Suspense } from 'react';
 import { useOs } from './shell';
@@ -11,27 +12,26 @@ import { AttendanceRegister } from './attendance-register';
 import { Empty, Loading } from './ui/states';
 export function ModulePage({ moduleKey }: { moduleKey: string }) {
   const { catalog, identity } = useOs();
-  if (moduleKey === 'staff-attendance') return <StaffAttendance />;
+  if (moduleKey === 'work-calendar' && identity.principal.role === 'Super Admin')
+    return <WorkCalendar />;
+  if (moduleKey === 'staff-attendance')
+    return catalog.attendance &&
+      ['Super Admin', 'Business Manager', 'Operations Manager', 'Site Supervisor'].includes(
+        identity.principal.role,
+      ) ? (
+      <AttendanceRegister />
+    ) : staffAttendanceRoles.includes(identity.principal.role) ? (
+      <StaffHistory />
+    ) : (
+      <Empty title="Module unavailable" message="Staff access required." />
+    );
+  if (moduleKey === 'attendance' && staffAttendanceRoles.includes(identity.principal.role))
+    return <StaffAttendance />;
   if (
     ['flowbridge', 'lead-generation'].includes(moduleKey) &&
     identity.principal.role === 'Super Admin'
   )
     return <FlowBridge leads={moduleKey === 'lead-generation'} />;
-  if (
-    moduleKey === 'attendance' &&
-    catalog.attendance &&
-    ['Super Admin', 'Business Manager', 'Operations Manager', 'Site Supervisor'].includes(
-      identity.principal.role,
-    )
-  )
-    return identity.principal.role === 'Site Supervisor' ? (
-      <StaffAttendance workers />
-    ) : (
-      <>
-        <StaffAttendance />
-        <AttendanceRegister />
-      </>
-    );
   if (moduleKey === 'viagreen' && catalog.waste) return <Dashboard vertical="viagreen" />;
   if (moduleKey === 'anthrasite' && catalog.production) return <Dashboard vertical="anthrasite" />;
   if (moduleKey === 'reports' && identity.principal.permissions.includes('reports:read'))
