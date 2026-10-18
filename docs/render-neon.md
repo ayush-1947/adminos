@@ -27,12 +27,12 @@ At https://dashboard.render.com select New → Blueprint, connect the repository
 
 Supply these prompted values:
 
-| Service | Variable | Value |
-| --- | --- | --- |
-| API | DATABASE_URL | Neon pooled connection string |
-| API | DIRECT_URL | Neon unpooled/direct connection string |
-| API | APP_ORIGIN | Frontend's exact HTTPS origin, without trailing slash |
-| Frontend | API_INTERNAL_URL | API's HTTPS origin, without trailing slash |
+| Service  | Variable         | Value                                                 |
+| -------- | ---------------- | ----------------------------------------------------- |
+| API      | DATABASE_URL     | Neon pooled connection string                         |
+| API      | DIRECT_URL       | Neon unpooled/direct connection string                |
+| API      | APP_ORIGIN       | Frontend's exact HTTPS origin, without trailing slash |
+| Frontend | API_INTERNAL_URL | API's HTTPS origin, without trailing slash            |
 
 Render generates the API session secret. Leave `PORT` unset; Render supplies it. Build commands explicitly install development dependencies needed by TypeScript and Next.js.
 
@@ -65,6 +65,12 @@ Stop if a command fails. Provision only once for a new organization; configure o
 Migrations are deliberately separate from the Render build so a build/preview does not mutate production data. For subsequent releases, test in staging, confirm a backup, then apply reviewed production migrations once before releasing dependent application code. Free Render services do not provide the same release tooling as paid services.
 
 ## 5. Verify
+
+### Opening the API service URL
+
+The API service is separate from the frontend. Visiting its bare `/` URL redirects to the frontend configured by `APP_ORIGIN`; startup `HEAD /` requests return 200 without querying the database. Use `/api/health` for process liveness and `/api/ready` for a database check. Both probe endpoints are outside the application rate-limit quota, so infrastructure polling does not use that quota.
+
+A successful build followed by repeated `/api/health` HTTP 200 entries shows a running API. Earlier releases returned 404 for bare `/` requests because they had no root page; that response alone did not indicate a crash. If the frontend works while proxied API calls return 502, compare direct API readiness with frontend readiness after startup recovery before changing the database or credentials.
 
 ### Intermittent "server unavailable" after inactivity
 
