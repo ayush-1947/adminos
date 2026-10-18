@@ -275,7 +275,11 @@ export async function save(
   requestId: string,
 ) {
   requirePermission(p, `${key}:write`);
-  assert(key !== 'attendance', 422, 'Use the daily attendance register to mark or correct attendance');
+  assert(
+    key !== 'attendance',
+    422,
+    'Use the daily attendance register to mark or correct attendance',
+  );
   const r = getResource(key);
   assert(!r.readonly, 405, 'This resource uses a dedicated workflow');
   if (id) z.uuid().parse(id);
@@ -354,6 +358,7 @@ export async function save(
           );
       }
       if (p.role === 'Operations Manager' && key === 'sites') {
+        assert(p.employeeId, 403, 'A linked manager profile is required to manage sites');
         assert(merged.managerId === p.employeeId, 403, 'Sites must remain assigned to you');
         if (merged.supervisorId)
           assert(

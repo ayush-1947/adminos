@@ -264,7 +264,7 @@ describe('Authenticated APIs against PostgreSQL', () => {
       data: { organizationId: org, name: 'Operations Manager', scope: 'ASSIGNED' },
     });
     const permissions = await db.permission.findMany({
-      where: { key: { in: ['sites:read', 'employees:read', 'employees:write'] } },
+      where: { key: { in: ['sites:read', 'sites:write', 'employees:read', 'employees:write'] } },
     });
     await db.rolePermission.createMany({
       data: permissions.map((p) => ({ organizationId: org, roleId: role.id, permissionId: p.id })),
@@ -307,6 +307,34 @@ describe('Authenticated APIs against PostgreSQL', () => {
       },
     });
     const cookie = await session(user.id);
+    const location = { latitude: 19.1335208, longitude: 72.8540501 };
+    const updated = await request(app)
+      .patch(`/api/resources/sites/${site}`)
+      .set('Origin', origin)
+      .set('Cookie', cookie)
+      .send(location);
+    expect(updated.status).toBe(200);
+    expect(await db.site.findUnique({ where: { id: site } })).toMatchObject(location);
+    expect(
+      (
+        await request(app)
+          .patch(`/api/resources/sites/${site}`)
+          .set('Origin', origin)
+          .set('Cookie', supervisorCookie)
+          .send({ latitude: 0, longitude: 0 })
+      ).status,
+    ).toBe(403);
+    await db.site.update({ where: { id: otherSite }, data: { managerId: stranger.id } });
+    expect(
+      (
+        await request(app)
+          .patch(`/api/resources/sites/${otherSite}`)
+          .set('Origin', origin)
+          .set('Cookie', cookie)
+          .send(location)
+      ).status,
+    ).toBe(404);
+    await db.site.update({ where: { id: otherSite }, data: { managerId: manager.id } });
     expect((await request(app).get('/api/resources/sites').set('Cookie', cookie)).body.total).toBe(
       2,
     );
@@ -575,11 +603,14 @@ describe('Authenticated APIs against PostgreSQL', () => {
     expect(r.status).toBe(422);
   });
   it('validates and audits a site write', async () => {
+    const before = await db.auditLog.count({
+      where: { organizationId: org, entityId: site, action: 'UPDATE' },
+    });
     const r = await patch(`/api/resources/sites/${site}`).send({ name: 'Updated assigned site' });
     expect(r.status).toBe(200);
     expect(
       await db.auditLog.count({ where: { organizationId: org, entityId: site, action: 'UPDATE' } }),
-    ).toBe(1);
+    ).toBe(before + 1);
   });
   it('paginates, filters, searches and sorts server-side', async () => {
     const r = await request(app)

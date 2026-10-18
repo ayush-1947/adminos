@@ -264,6 +264,13 @@ export function RecordDialog({
             : 'Add a record to your shared operational workspace.'}{' '}
           Required fields are marked *.
         </DialogDescription>
+        {moduleKey === 'sites' && (
+          <p className="dialog-description">
+            Admins and site managers can set the attendance location using Latitude and Longitude
+            below. Use the site gate or usual check-in spot. Supervisors must be within 300 metres
+            of this location to start or stop attendance.
+          </p>
+        )}
         <form onSubmit={submit}>
           <div className="form-grid">
             {visibleFields.map((f) => (
@@ -611,7 +618,9 @@ export function Records({ moduleKey }: { moduleKey: string }) {
           </Link>
         ))}
       </div>
-      {['employees', 'assignments', 'sites', 'clients', 'contacts'].includes(moduleKey) && <OrgChart refresh={refresh} />}
+      {['employees', 'assignments', 'sites', 'clients', 'contacts'].includes(moduleKey) && (
+        <OrgChart refresh={refresh} />
+      )}
       <section className="panel records-panel">
         <div className="records-toolbar">
           <div className="search-input">
