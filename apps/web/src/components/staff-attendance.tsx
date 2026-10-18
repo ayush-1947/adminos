@@ -19,13 +19,20 @@ function locate(): Promise<Location> {
     if (!navigator.geolocation)
       return reject(new Error('Location is unavailable in this browser.'));
     navigator.geolocation.getCurrentPosition(
-      (p) =>
+      (p) => {
+        if (!Number.isFinite(p.coords.accuracy) || p.coords.accuracy <= 0 || p.coords.accuracy > 20)
+          return reject(
+            new Error(
+              'GPS accuracy must be 20 metres or better. Move outdoors near the site check-in spot and try again.',
+            ),
+          );
         resolve({
           latitude: p.coords.latitude,
           longitude: p.coords.longitude,
           accuracy: p.coords.accuracy,
           capturedAt: new Date(p.timestamp).toISOString(),
-        }),
+        });
+      },
       () => reject(new Error('Location permission is required. Enable location and try again.')),
       { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 },
     );

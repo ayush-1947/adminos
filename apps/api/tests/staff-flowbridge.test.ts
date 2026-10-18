@@ -169,6 +169,17 @@ describe('Staff attendance', () => {
       (await clock('START', { capturedAt: new Date(Date.now() - 300000).toISOString() })).status,
     ).toBe(422);
     expect((await clock('START', { accuracy: '201' })).status).toBe(422);
+    expect((await clock('START', { accuracy: '21' })).status).toBe(422);
+    expect((await clock('START', { accuracy: '0' })).status).toBe(422);
+    expect((await clock('START', { accuracy: '-1' })).status).toBe(422);
+    expect(
+      (await clock('START', { capturedAt: new Date(Date.now() - 45000).toISOString() })).status,
+    ).toBe(422);
+    expect(
+      (await clock('START', { capturedAt: new Date(Date.now() + 60000).toISOString() })).status,
+    ).toBe(422);
+    // About 44m from the pin: inside 50m, but the 10m uncertainty crosses the boundary.
+    expect((await clock('START', { latitude: '19.0204' })).status).toBe(422);
     expect((await clock('START', { latitude: '20' })).status).toBe(422);
     expect((await clock('START', { siteId: randomUUID() })).status).toBe(404);
     expect(await db.staffDay.count({ where: { organizationId: org } })).toBe(0);
@@ -203,6 +214,18 @@ describe('Staff attendance', () => {
   });
   it('requires a second photo and location on stop and records server time', async () => {
     expect((await clock('STOP', {}, false)).status).toBe(422);
+    expect((await clock('STOP', { accuracy: '21' })).status).toBe(422);
+    expect((await clock('STOP', { latitude: '19.0204' })).status).toBe(422);
+    expect(
+      (await clock('STOP', { capturedAt: new Date(Date.now() - 45000).toISOString() })).status,
+    ).toBe(422);
+    expect(
+      (
+        await db.staffDay.findFirstOrThrow({
+          where: { organizationId: org, userId: supervisor.id },
+        })
+      ).checkOut,
+    ).toBeNull();
     expect((await clock('STOP')).status).toBe(200);
     expect((await clock('STOP')).status).toBe(409);
     const r = await db.staffDay.findFirstOrThrow({

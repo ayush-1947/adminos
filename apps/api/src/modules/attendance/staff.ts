@@ -131,7 +131,7 @@ export const clockSchema = z.strictObject({
   siteId: z.uuid(),
   latitude: z.coerce.number().min(-90).max(90),
   longitude: z.coerce.number().min(-180).max(180),
-  accuracy: z.coerce.number().min(0).max(200),
+  accuracy: z.coerce.number().positive().max(20),
   capturedAt: z.iso.datetime(),
 });
 export function distanceMeters(lat: number, lng: number, lat2: number, lng2: number) {
@@ -149,8 +149,9 @@ export async function clockStaff(
 ) {
   assert(p.role === 'Site Supervisor' && p.employeeId, 403, 'Supervisor access required');
   const b = clockSchema.parse(input);
+  const locationAge = Date.now() - new Date(b.capturedAt).getTime();
   assert(
-    Math.abs(Date.now() - new Date(b.capturedAt).getTime()) < 120000,
+    locationAge >= -5000 && locationAge <= 30000,
     422,
     'Refresh your current location and try again',
   );
@@ -175,10 +176,13 @@ export async function clockStaff(
     422,
     'Ask your manager to configure the site GPS coordinates',
   );
+  const distance = distanceMeters(b.latitude, b.longitude, site.latitude, site.longitude);
+  // Require the reported uncertainty circle to fit inside the attendance boundary.
+  // These checks constrain supplied evidence; browser GPS is not device attestation.
   assert(
-    distanceMeters(b.latitude, b.longitude, site.latitude, site.longitude) <= 300,
+    distance + b.accuracy <= 50,
     422,
-    'You must be within 300 metres of your assigned site',
+    'Move closer to the site check-in spot: your location and GPS uncertainty must fit within 50 metres',
   );
   return db.$transaction(
     async (tx) => {
@@ -249,6 +253,10 @@ export async function clockStaff(
             siteId: site.id,
             latitude: b.latitude,
             longitude: b.longitude,
+            accuracy: b.accuracy,
+            capturedAt: b.capturedAt,
+            distanceMeters: distance,
+            radiusMeters: 50,
           },
         },
       });

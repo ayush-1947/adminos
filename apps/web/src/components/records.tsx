@@ -267,8 +267,9 @@ export function RecordDialog({
         {moduleKey === 'sites' && (
           <p className="dialog-description">
             Admins and site managers can set the attendance location using Latitude and Longitude
-            below. Use the site gate or usual check-in spot. Supervisors must be within 300 metres
-            of this location to start or stop attendance.
+            below. Use the exact site gate or usual check-in spot. Supervisor attendance requires
+            GPS accuracy of 20 metres or better, with the location and its uncertainty inside a
+            50-metre boundary, for both start and stop.
           </p>
         )}
         <form onSubmit={submit}>
