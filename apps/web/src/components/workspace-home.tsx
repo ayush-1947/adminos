@@ -1,4 +1,5 @@
 'use client';
+import { StaffAttendance } from './staff-attendance';
 import { OrgChart } from './org-chart';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -14,8 +15,24 @@ export function WorkspaceHome() {
     identity.principal.role === 'Site Supervisor' &&
     identity.principal.permissions.includes('attendance:read')
   )
-    return <AttendanceRegister />;
-  return identity.principal.role === 'Customer' ? <CustomerHome /> : <Dashboard />;
+    return <StaffAttendance workers />;
+  return identity.principal.role === 'Customer' ? (
+    <CustomerHome />
+  ) : (
+    <>
+      {identity.principal.role === 'Super Admin' && (
+        <div className="page staff-actions">
+          <Link className="button" href="/lead-generation">
+            Lead generation
+          </Link>
+          <Link className="button secondary" href="/flowbridge">
+            FlowBridge
+          </Link>
+        </div>
+      )}
+      <Dashboard />
+    </>
+  );
 }
 function CustomerHome() {
   const [sites, setSites] = useState<Row[] | null>(null);

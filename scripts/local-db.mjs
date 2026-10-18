@@ -35,7 +35,14 @@ const result = await client.query('SELECT 1 FROM pg_database WHERE datname=$1', 
 await client.end();
 if (!result.rowCount) await pg.createDatabase('useless_os');
 console.log('Local PostgreSQL ready on 127.0.0.1:54329. Keep this process running.');
-if (process.send) process.send({ type: 'ready' });
+// The parent may time out or exit while PostgreSQL is starting. A closed IPC
+// channel must not terminate the database helper after it becomes ready.
+if (process.connected && process.send) {
+  process.send({ type: 'ready' }, (error) => {
+    if (error && error.code !== 'ERR_IPC_CHANNEL_CLOSED' && error.code !== 'EPIPE')
+      console.error('Unable to notify local database readiness:', error.code);
+  });
+}
 for (const signal of ['SIGINT', 'SIGTERM'])
   process.on(signal, async () => {
     await pg.stop();

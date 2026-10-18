@@ -15,6 +15,7 @@ type Person = {
   notes: string;
   version: string | null;
   locked: boolean;
+  lockReason?: string;
   shiftId: string | null;
 };
 type Register = {
@@ -231,7 +232,9 @@ export function AttendanceRegister() {
                           {person.position === 'SUPERVISOR' ? 'Supervisor' : 'Worker'} ·{' '}
                           {person.employeeCode}
                         </span>
-                        {person.locked && <small>Reviewed by manager</small>}
+                        {person.locked && (
+                          <small>{person.lockReason || 'Reviewed by manager'}</small>
+                        )}
                         {!person.shiftId && <small>A shift needs to be configured</small>}
                       </div>
                       <div

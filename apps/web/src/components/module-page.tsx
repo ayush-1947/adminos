@@ -1,4 +1,6 @@
 'use client';
+import { StaffAttendance } from './staff-attendance';
+import { FlowBridge } from './flowbridge';
 import { Suspense } from 'react';
 import { useOs } from './shell';
 import { Dashboard } from './dashboard';
@@ -9,6 +11,12 @@ import { AttendanceRegister } from './attendance-register';
 import { Empty, Loading } from './ui/states';
 export function ModulePage({ moduleKey }: { moduleKey: string }) {
   const { catalog, identity } = useOs();
+  if (moduleKey === 'staff-attendance') return <StaffAttendance />;
+  if (
+    ['flowbridge', 'lead-generation'].includes(moduleKey) &&
+    identity.principal.role === 'Super Admin'
+  )
+    return <FlowBridge leads={moduleKey === 'lead-generation'} />;
   if (
     moduleKey === 'attendance' &&
     catalog.attendance &&
@@ -16,7 +24,14 @@ export function ModulePage({ moduleKey }: { moduleKey: string }) {
       identity.principal.role,
     )
   )
-    return <AttendanceRegister />;
+    return identity.principal.role === 'Site Supervisor' ? (
+      <StaffAttendance workers />
+    ) : (
+      <>
+        <StaffAttendance />
+        <AttendanceRegister />
+      </>
+    );
   if (moduleKey === 'viagreen' && catalog.waste) return <Dashboard vertical="viagreen" />;
   if (moduleKey === 'anthrasite' && catalog.production) return <Dashboard vertical="anthrasite" />;
   if (moduleKey === 'reports' && identity.principal.permissions.includes('reports:read'))

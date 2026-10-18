@@ -1,0 +1,106 @@
+{
+  "version": "7.1",
+  "screens": [
+    {
+      "id": "REGISTRATION",
+      "title": "Registration",
+      "terminal": true,
+      "data": {},
+      "layout": {
+        "type": "SingleColumnLayout",
+        "children": [
+          {
+            "type": "Form",
+            "name": "registration_form",
+            "children": [
+              {
+                "type": "TextInput",
+                "name": "full_name",
+                "label": "Full name",
+                "required": true,
+                "input-type": "text"
+              },
+              {
+                "type": "TextInput",
+                "name": "email",
+                "label": "Email",
+                "required": true,
+                "input-type": "email"
+              },
+              {
+                "type": "TextInput",
+                "name": "mobile_number",
+                "label": "Mobile number",
+                "required": false,
+                "input-type": "phone"
+              },
+              {
+                "type": "TextInput",
+                "name": "city",
+                "label": "City",
+                "required": false,
+                "input-type": "text"
+              },
+              {
+                "type": "Dropdown",
+                "name": "service",
+                "label": "Service required",
+                "required": true,
+                "data-source": [
+                  { "id": "consultation", "title": "Consultation" },
+                  { "id": "support", "title": "Support" },
+                  { "id": "other", "title": "Other" }
+                ]
+              },
+              {
+                "type": "Dropdown",
+                "name": "contact_method",
+                "label": "Preferred contact method",
+                "required": true,
+                "data-source": [
+                  { "id": "whatsapp", "title": "WhatsApp" },
+                  { "id": "phone", "title": "Phone" },
+                  { "id": "email", "title": "Email" }
+                ]
+              },
+              {
+                "type": "TextInput",
+                "name": "appointment_date",
+                "label": "Preferred appointment date (YYYY-MM-DD)",
+                "required": false,
+                "input-type": "text"
+              },
+              {
+                "type": "TextArea",
+                "name": "comments",
+                "label": "Additional comments",
+                "required": false
+              },
+              {
+                "type": "TextBody",
+                "text": "We will use your details to respond to this enquiry. Submitting does not opt you into marketing."
+              },
+              {
+                "type": "Footer",
+                "label": "Submit",
+                "on-click-action": {
+                  "name": "complete",
+                  "payload": {
+                    "full_name": "${form.full_name}",
+                    "email": "${form.email}",
+                    "mobile_number": "${form.mobile_number}",
+                    "city": "${form.city}",
+                    "service": "${form.service}",
+                    "contact_method": "${form.contact_method}",
+                    "appointment_date": "${form.appointment_date}",
+                    "comments": "${form.comments}"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

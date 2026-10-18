@@ -20,6 +20,15 @@ import { catalog, permissionKeys } from './modules/resources/catalog';
 import { list, detail, save } from './modules/resources/service';
 import { scopeFor } from './modules/resources/scope';
 import { dashboard } from './modules/analytics/service';
+import {
+  staffOverview,
+  clockStaff,
+  manualStaff,
+  requestLeave,
+  reviewLeave,
+  staffPhoto,
+} from './modules/attendance/staff';
+import { flowRouter, webhookRouter } from './modules/flowbridge/service';
 import { recordTap } from './modules/attendance/service';
 import { attendanceRegister, saveAttendanceRegister } from './modules/attendance/manual';
 import { exportReport } from './modules/reports/service';
@@ -45,6 +54,7 @@ export const logger = pino({
 });
 export const app = express();
 app.disable('x-powered-by');
+if (config.NODE_ENV === 'production') app.set('trust proxy', 1);
 app.use(helmet());
 app.use(cors({ origin: config.APP_ORIGIN, credentials: true }));
 app.use((req, res, next) => {
@@ -58,6 +68,7 @@ app.use(
   '/api',
   rateLimit({ windowMs: 60000, limit: 300, standardHeaders: 'draft-8', legacyHeaders: false }),
 );
+app.use('/api/flowbridge/webhook', webhookRouter);
 app.use(express.json({ limit: '256kb' }));
 app.use(cookieParser());
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
@@ -119,6 +130,22 @@ app.get('/api/auth/me', async (req, res) => {
     }),
   ]);
   res.json({ user, organization, businessUnits, principal: p });
+});
+app.use('/api/flowbridge', flowRouter);
+app.get('/api/staff-attendance', async (req, res) => res.json(await staffOverview(req.principal)));
+app.post('/api/staff-attendance/manual', async (req, res) =>
+  res.json(await manualStaff(req.principal, req.body, req.requestId)),
+);
+app.post('/api/staff-attendance/leaves', async (req, res) =>
+  res.status(201).json(await requestLeave(req.principal, req.body)),
+);
+app.patch('/api/staff-attendance/leaves/:id', async (req, res) =>
+  res.json(await reviewLeave(req.principal, String(req.params.id), req.body, req.requestId)),
+);
+app.get('/api/staff-attendance/:id/photo/:kind', async (req, res) => {
+  assert(['start', 'stop'].includes(String(req.params.kind)), 404, 'Photo not found');
+  const f = await staffPhoto(req.principal, String(req.params.id), req.params.kind === 'stop');
+  res.type(f.mime).send(Buffer.from(f.content));
 });
 app.get('/api/org-chart', async (req, res) => res.json(await orgChart(req.principal)));
 app.get('/api/attendance/register', async (req, res) =>
@@ -226,10 +253,39 @@ app.get('/api/saved-pdfs/:id/download', async (req, res) => {
   const file = await downloadPdf(String(req.params.id), req.principal);
   res.attachment(file.filename).type('application/pdf').send(file.content);
 });
+let activeUploads = 0;
+app.use(
+  ['/api/documents', '/api/profiles/:type/:id/assets', '/api/staff-attendance/clock'],
+  (req, res, next) => {
+    if (req.method !== 'POST') return next();
+    if (activeUploads >= 4) {
+      res.status(503).json({ error: 'Uploads are busy. Try again shortly.' });
+      return;
+    }
+    activeUploads++;
+    let released = false;
+    const release = () => {
+      if (!released) {
+        released = true;
+        activeUploads--;
+      }
+    };
+    res.once('finish', release);
+    res.once('close', release);
+    next();
+  },
+);
 const uploader = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024, files: 1, fields: 6 },
 });
+const staffUploader = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 2 * 1024 * 1024, files: 1, fields: 7 },
+});
+app.post('/api/staff-attendance/clock', staffUploader.single('photo'), async (req, res) =>
+  res.json(await clockStaff(req.principal, req.body, req.file, req.requestId)),
+);
 app.get('/api/profiles/:type/:id', async (req, res) =>
   res.json(await getProfile(String(req.params.type), String(req.params.id), req.principal)),
 );
@@ -496,7 +552,11 @@ app.use(
       }
     }
     if (error instanceof multer.MulterError) {
-      res.status(422).json({ error: 'File exceeds upload limits (10 MB)' });
+      res
+        .status(422)
+        .json({
+          error: 'File exceeds upload limits (2 MB for attendance photos; 10 MB for other uploads)',
+        });
       return;
     }
     if (config.NODE_ENV === 'test') console.error(error);

@@ -246,3 +246,53 @@ html[data-theme='dark'] .attendance-absent[aria-pressed='true'] {
 html[data-theme='dark'] .attendance-half_day[aria-pressed='true'] {
   color: #f1d084;
 }
+
+.staff-form {
+  display: grid;
+  gap: 16px;
+  max-width: 560px;
+  margin: 20px 0;
+}
+.staff-form label,
+.staff-review label {
+  display: grid;
+  gap: 8px;
+}
+.staff-form input,
+.staff-form select,
+.staff-form textarea,
+.staff-review input {
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: inherit;
+  width: 100%;
+  min-width: 0;
+}
+.staff-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.staff-review {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--border);
+}
+.staff-attendance .settings-body {
+  padding: 24px;
+}
+.staff-attendance .table-scroll {
+  overflow-x: auto;
+}
+.staff-attendance table {
+  min-width: 580px;
+  width: 100%;
+  border-collapse: collapse;
+}
+.staff-attendance th,
+.staff-attendance td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}

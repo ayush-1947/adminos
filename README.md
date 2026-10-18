@@ -36,7 +36,7 @@ The seed is additive and rerunnable through deterministic IDs. It does not reset
 
 ### Simple manual attendance
 
-Supervisors land directly on a daily attendance sheet and can mark themselves and their own assigned workers. Choose a site/date, tap **Present**, **Absent**, or **Half day** beside each person, optionally add notes, then tap **Save attendance**. No check-in/out times or correction reasons are required.
+Supervisors land on GPS/photo staff attendance and their daily manual worker sheet. Start and stop require a fresh location and photo at an assigned site. Managers and accountants use manual staff attendance; missed days go to the reporting manager through a leave sheet. See [staff attendance and FlowBridge release](docs/flowbridge/README.md) for setup and deployment. Supervisors can mark their own assigned workers in the existing register. Choose a site/date, tap **Present**, **Absent**, or **Half day** beside each person, optionally add notes, then tap **Save attendance**. No check-in/out times or correction reasons are required.
 
 For a local supervisor demo login, set `SEED_SUPERVISOR_EMAIL` and `SEED_SUPERVISOR_PASSWORD` in `.env` before `npm run db:seed`. This links the login to supervisor `UPL-S001`; the development seed also includes 30 days of sample supervisor attendance. Existing production databases use targeted account provisioning rather than the development seed.
 
@@ -104,7 +104,7 @@ Generate secrets with `node -e "console.log(require('crypto').randomBytes(48).to
 
 Open **Finance → Invoices**, select a record, and use **Save PDF** or **Save & download PDF**. Open **E-challans** to create delivery, waste-collection or waste-disposal records and use the same PDF actions. The core record identifies the client, site, date and amount or material quantity; PDF customization fields are optional.
 
-**Optional PDF details** supports a document-number override, issuer/recipient addresses and GSTINs, a PNG/JPEG logo (up to 120 KB), bank/account/IFSC/UPI information, terms and notes. For bills, an optional GST rate splits tax *within the existing total*; it does not increase the invoice or change payment balances. Confirm the applicable tax treatment before issuing a bill.
+**Optional PDF details** supports a document-number override, issuer/recipient addresses and GSTINs, a PNG/JPEG logo (up to 120 KB), bank/account/IFSC/UPI information, terms and notes. For bills, an optional GST rate splits tax _within the existing total_; it does not increase the invoice or change payment balances. Confirm the applicable tax treatment before issuing a bill.
 
 PDF bytes are stored privately in PostgreSQL, without requiring Supabase Storage. Identical content reuses its saved copy; changed content creates a new dated version. Downloads always recheck access to the original record. Database backups include these files. The detail view shows the latest 100 saved versions.
 

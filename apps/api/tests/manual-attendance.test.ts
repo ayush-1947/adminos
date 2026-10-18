@@ -253,9 +253,13 @@ describe('Simple daily attendance and hierarchy enforcement', () => {
       .set('Cookie', supervisorCookie);
     expect(response.status).toBe(404);
   });
-  it('saves supervisor self-attendance and half-day worker attendance with optional notes and no invented timestamps', async () => {
+  it('requires GPS for supervisor self-attendance and preserves manual half-day worker attendance', async () => {
+    expect(
+      (await save(supervisorCookie, [{ employeeId: supervisor, status: 'PRESENT', version: null }]))
+        .status,
+    ).toBe(403);
+    await save(managerCookie, [{ employeeId: supervisor, status: 'PRESENT', version: null }]);
     const response = await save(supervisorCookie, [
-      { employeeId: supervisor, status: 'PRESENT', version: null },
       { employeeId: worker, status: 'HALF_DAY', notes: 'Left after lunch', version: null },
     ]);
     expect(response.status).toBe(200);

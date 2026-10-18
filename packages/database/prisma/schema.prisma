@@ -17,6 +17,11 @@ model Organization {
   deletedAt DateTime? @map("deleted_at")
   name String
   slug String @unique
+  staffDays StaffDay[]
+  staffLeaves StaffLeave[]
+  flowContacts FlowContact[]
+  flowEvents FlowEvent[]
+  flowCampaigns FlowCampaign[]
   profiles PersonProfile[]
   businessUnitRecords BusinessUnit[]
   roleRecords Role[]
@@ -159,6 +164,8 @@ model RolePermission {
 }
 
 model User {
+  staffDays StaffDay[]
+  staffLeaves StaffLeave[]
   id String @id @default(uuid()) @db.Uuid
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -1264,4 +1271,117 @@ model StaffPayment {
   createdBy String @db.Uuid
   @@index([profileId, paidAt])
   @@map("staff_payments")
+}
+
+
+// Staff attendance is separate from the existing worker register.
+model StaffDay {
+  id String @id @default(uuid()) @db.Uuid
+  organizationId String @db.Uuid
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  userId String @db.Uuid
+  user User @relation(fields: [userId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  workDate DateTime @db.Date
+  siteId String? @db.Uuid
+  status String @default("PRESENT")
+  source String
+  checkIn DateTime?
+  checkOut DateTime?
+  startLatitude Float?
+  startLongitude Float?
+  startAccuracy Float?
+  endLatitude Float?
+  endLongitude Float?
+  endAccuracy Float?
+  startPhoto Bytes?
+  endPhoto Bytes?
+  startMime String?
+  endMime String?
+  notes String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([userId, workDate])
+  @@index([organizationId, workDate])
+  @@map("staff_days")
+}
+
+model StaffLeave {
+  id String @id @default(uuid()) @db.Uuid
+  organizationId String @db.Uuid
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  userId String @db.Uuid
+  user User @relation(fields: [userId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  reviewerId String @db.Uuid
+  workDate DateTime @db.Date
+  reason String
+  status String @default("PENDING")
+  reviewNote String?
+  reviewedAt DateTime?
+  createdAt DateTime @default(now())
+  @@unique([userId, workDate])
+  @@index([organizationId, reviewerId, status])
+  @@map("staff_leaves")
+}
+
+model FlowContact {
+  id String @id @default(uuid()) @db.Uuid
+  organizationId String @db.Uuid
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  whatsappId String
+  name String?
+  email String?
+  city String?
+  status String @default("NEW")
+  state String @default("NEW")
+  leadId String? @db.Uuid
+  submission Json?
+  notes String?
+  messages FlowMessage[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([organizationId, whatsappId])
+  @@index([organizationId, updatedAt])
+  @@map("flow_contacts")
+}
+
+model FlowMessage {
+  id String @id @default(uuid()) @db.Uuid
+  contactId String @db.Uuid
+  contact FlowContact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  metaId String? @unique
+  direction String
+  kind String
+  content String
+  deliveryStatus String?
+  createdAt DateTime @default(now())
+  @@index([contactId, createdAt])
+  @@map("flow_messages")
+}
+
+model FlowEvent {
+  id String @id @default(uuid()) @db.Uuid
+  organizationId String @db.Uuid
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  eventKey String @unique
+  payload Json
+  status String @default("PENDING")
+  attempts Int @default(0)
+  lastError String?
+  nextAttemptAt DateTime @default(now())
+  lockedAt DateTime?
+  createdAt DateTime @default(now())
+  @@index([status, nextAttemptAt])
+  @@map("flow_events")
+}
+
+model FlowCampaign {
+  id String @id @default(uuid()) @db.Uuid
+  organizationId String @db.Uuid
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  name String
+  phone String
+  message String @default("Hi")
+  createdAt DateTime @default(now())
+  @@index([organizationId])
+  @@map("flow_campaigns")
 }

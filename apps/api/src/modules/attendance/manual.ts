@@ -150,7 +150,8 @@ async function roster(
     workDate,
     rows: [...rows.values()].map((person) => {
       const record = records.find((a) => a.employeeId === person.employeeId);
-      const locked = isSupervisor(p) && !!record?.manualOverrideBy;
+      const locked =
+        isSupervisor(p) && (person.employeeId === p.employeeId || !!record?.manualOverrideBy);
       return {
         ...person,
         shiftId: person.shiftId || fallbackShift?.id || null,
@@ -159,6 +160,10 @@ async function roster(
         version: record?.updatedAt.toISOString() || null,
         locked,
         source: record?.source || null,
+        lockReason:
+          isSupervisor(p) && person.employeeId === p.employeeId
+            ? 'Use GPS and photo attendance above'
+            : 'Reviewed by manager',
       };
     }),
   };
@@ -194,6 +199,11 @@ export async function attendanceRegister(p: Principal, query: unknown) {
 export async function saveAttendanceRegister(p: Principal, body: unknown, requestId: string) {
   authorize(p, true);
   const input = saveSchema.parse(body);
+  assert(
+    !isSupervisor(p) || input.entries.every((e) => e.employeeId !== p.employeeId),
+    403,
+    'Use GPS and photo start/stop for your own staff attendance',
+  );
   assert(
     new Set(input.entries.map((e) => e.employeeId)).size === input.entries.length,
     422,

@@ -61,6 +61,7 @@ const nav = [
       ['sites', 'Sites', MapPin],
       ['employees', 'Workforce', Users],
       ['attendance', 'Attendance', CalendarCheck],
+      ['staff-attendance', 'Staff attendance', CalendarCheck],
       ['tasks', 'Tasks & visits', ClipboardCheck],
       ['tickets', 'Complaints', Ticket],
     ],
@@ -82,6 +83,8 @@ const nav = [
       ['reports', 'Reports & analytics', FileChartColumn],
       ['documents', 'Documents', FileText],
       ['settings', 'Settings & access', Settings2],
+      ['lead-generation', 'Lead generation', Sprout],
+      ['flowbridge', 'FlowBridge', Handshake],
     ],
   },
 ] as const;
@@ -126,6 +129,17 @@ export function Shell({ children }: { children: React.ReactNode }) {
   if (!identity) return <Loading label="Opening your workspace…" />;
   const allowed = (key: string) =>
     key === '' ||
+    (['flowbridge', 'lead-generation'].includes(key) &&
+      identity.principal.role === 'Super Admin') ||
+    (key === 'staff-attendance' &&
+      [
+        'Super Admin',
+        'Operations Manager',
+        'Business Manager',
+        'Site Supervisor',
+        'Accountant',
+        'Finance/Admin',
+      ].includes(identity.principal.role)) ||
     (key === 'reports' && identity.principal.permissions.includes('reports:read')) ||
     (key === 'settings' && identity.principal.permissions.includes('users:manage')) ||
     (key === 'viagreen' && !!catalog.waste) ||
@@ -141,6 +155,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
           anthrasite: 'Anthrasite',
           reports: 'Reports & analytics',
           settings: 'Settings & access',
+          'staff-attendance': 'Staff attendance',
+          'lead-generation': 'Lead generation',
+          flowbridge: 'FlowBridge',
           profiles: 'Profile',
         }[pathname.slice(1)] ||
         'Workspace';
